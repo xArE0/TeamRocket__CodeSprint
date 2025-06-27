@@ -75,4 +75,7 @@ dependencies {
 
     //Serialization
     implementation (libs.kotlinx.serialization.json)
+
+    // Splash Screen API
+    implementation(libs.androidx.core.splashscreen)
 }

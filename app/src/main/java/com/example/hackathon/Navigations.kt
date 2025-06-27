@@ -6,6 +6,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import kotlinx.serialization.Serializable
 
+/*-------------------------------------------Routes and Navigation--------------------------------------------------*/
 @Composable
 fun MyAppNavigation(
     sessionViewModel: SessionViewModel = LocalSessionManager.current
@@ -44,7 +45,7 @@ fun MyAppNavigation(
     }
 }
 
-// Serializable route objects remain unchanged
+/*-------------------------------------------Serializable Routes Objects--------------------------------------------------*/
 @Serializable
 object RouteHomepage
 

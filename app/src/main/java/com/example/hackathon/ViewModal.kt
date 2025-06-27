@@ -30,6 +30,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.delay
 
+
+/*-------------------------------------------Navigate to Homepage Through Splash--------------------------------------------------*/
 @Composable
 fun SplashScreenApp() {
     var isLoading by remember { mutableStateOf(true) }
@@ -50,6 +52,7 @@ fun SplashScreenApp() {
     }
 }
 
+/*-------------------------------------------Splash Screen UI--------------------------------------------------*/
 @Composable
 fun SplashScreen() {
     Box(
