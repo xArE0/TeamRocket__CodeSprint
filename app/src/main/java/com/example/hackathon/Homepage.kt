@@ -23,6 +23,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,12 +37,26 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 
+import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
+import kotlinx.coroutines.Dispatchers
+
+/*-------------------------------------------Homepage UI--------------------------------------------------*/
 @Composable
 fun Homepage(
     navController: NavController,
     sessionViewModel: SessionViewModel,
     sessionState: SessionState
 ) {
+    val firebaseData = remember { FirebaseDataClass() }
+    val userId = sessionState.userId
+
+    val userData by produceState<User?>(initialValue = null, userId) {
+        if (userId != null) {
+            value = firebaseData.fetchUserData(userId)
+        }
+    }
+
     Scaffold(
         bottomBar = { BottomNavigationBar(navController) }
     ) { innerPadding ->
@@ -52,10 +67,17 @@ fun Homepage(
                 .padding(16.dp)
         ) {
             Text(
-                text = "Welcome to the Homepage!",
+                text = "Welcome${userId?.let { ", $it" } ?: "!"}",
                 style = TextStyle(fontSize = 24.sp, fontWeight = FontWeight.Bold)
             )
-            // Add more content here as needed
+            Spacer(modifier = Modifier.height(16.dp))
+            if (userData != null) {
+                Text("Full Name: ${userData?.fullName ?: "N/A"}")
+                Text("Email: ${userData?.email ?: "N/A"}")
+                Text("Mobile: ${userData?.mobileNumber ?: "N/A"}")
+            } else if (userId != null) {
+                Text("Loading user data...")
+            }
         }
     }
 }

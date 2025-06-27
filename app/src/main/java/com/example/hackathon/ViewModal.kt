@@ -29,9 +29,38 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.delay
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.tasks.await
 
+// User data class
+data class User(
+    val fullName: String = "",
+    val email: String = "",
+    val mobileNumber: String = ""
+)
 
-/*-------------------------------------------Navigate to Homepage Through Splash--------------------------------------------------*/
+/*-------------------------------------------Main Class to Fetch Data from Firebase-----------------------------------*/
+class FirebaseDataClass {
+    private val firestore = FirebaseFirestore.getInstance()
+
+    suspend fun fetchUserData(userId: String): User? {
+        return try {
+            val doc = firestore.collection("users").document(userId).get().await()
+            if (doc.exists()) {
+                val data = doc.data
+                User(
+                    fullName = data?.get("fullName") as? String ?: "",
+                    email = data?.get("email") as? String ?: "",
+                    mobileNumber = data?.get("mobileNumber") as? String ?: ""
+                )
+            } else null
+        } catch (e: Exception) {
+            null
+        }
+    }
+}
+
+/*-------------------------------------------Navigate to Homepage Through Splash-------------------------------------*/
 @Composable
 fun SplashScreenApp() {
     var isLoading by remember { mutableStateOf(true) }
