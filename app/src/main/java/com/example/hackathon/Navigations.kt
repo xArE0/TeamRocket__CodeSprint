@@ -19,7 +19,7 @@ fun MyAppNavigation(
         RouteSignupScreen::class.qualifiedName
     )
 
-    NavHost(navController = navController, startDestination = RouteSignupScreen::class.qualifiedName ?: "") {
+    NavHost(navController = navController, startDestination = RouteHomepage::class.qualifiedName ?: "") {
         composable<RouteHomepage> {
             Homepage(
                 navController = navController,

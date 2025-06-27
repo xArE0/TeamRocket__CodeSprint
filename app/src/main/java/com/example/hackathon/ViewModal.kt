@@ -14,7 +14,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -29,73 +28,64 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.delay
 
-//@Composable
-//fun SplashScreenApp() {
-//    var isLoading by remember { mutableStateOf(true) }
-//
-//    val sessionViewModel: SessionViewModel = viewModel(factory = SessionViewModel.Factory)
-//
-//    // Collecting sessionState using collectAsState
-//    val sessionState by sessionViewModel.sessionState.collectAsState()
-//
-//    LaunchedEffect(Unit) {
-//        delay(2000)
-//        isLoading = false
-//    }
-//
-//    if (isLoading) {
-//        SplashScreen()
-//    } else {
-//        CompositionLocalProvider(LocalSessionManager provides sessionViewModel) {
-//            val navController = rememberNavController()
-//            MyAppNavigation(
-//                navController = navController,
-//                sessionViewModel = sessionViewModel,
-//                sessionState = sessionState
-//            )
-//        }
-//    }
-//}
-//
-//@Composable
-//fun SplashScreen() {
-//    Box(
-//        modifier = Modifier
-//            .fillMaxSize()
-//            .background(Color.White),
-//        contentAlignment = Alignment.Center
-//    ) {
-//        Column(
-//            horizontalAlignment = Alignment.CenterHorizontally,
-//            verticalArrangement = Arrangement.Center
-//        ) {
-//            Image(
-//                painter = painterResource(id = R.drawable.homepage_icon),
-//                contentDescription = "App Logo",
-//                modifier = Modifier
-//                    .fillMaxWidth(0.5f)
-//                    .aspectRatio(1f)
-//            )
-//
-//            Spacer(modifier = Modifier.height(30.dp))
-//
-//            Text(
-//                text = "UrbanFinder",
-//                style = TextStyle(
-//                    brush = Brush.linearGradient(
-//                        colors = listOf(
-//                            Color(0xFFFF69B4), // Neon Pink
-//                            Color(0xFF4C4CFF), // Neon Blue
-//                            Color(0xFF00FF00)  // Neon Green
-//                        )
-//                    ),
-//                    fontSize = 42.sp,
-//                    fontWeight = FontWeight.Bold
-//                )
-//            )
-//        }
-//    }
-//}
+@Composable
+fun SplashScreenApp() {
+    var isLoading by remember { mutableStateOf(true) }
+
+    val sessionViewModel: SessionViewModel = viewModel(factory = SessionViewModel.Factory)
+
+    LaunchedEffect(Unit) {
+        delay(2000)
+        isLoading = false
+    }
+
+    if (isLoading) {
+        SplashScreen()
+    } else {
+        CompositionLocalProvider(LocalSessionManager provides sessionViewModel) {
+            MyAppNavigation(sessionViewModel = sessionViewModel)
+        }
+    }
+}
+
+@Composable
+fun SplashScreen() {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.homepage_icon),
+                contentDescription = "App Logo",
+                modifier = Modifier
+                    .fillMaxWidth(0.5f)
+                    .aspectRatio(1f)
+            )
+
+            Spacer(modifier = Modifier.height(30.dp))
+
+            Text(
+                text = "Whatever",
+                style = TextStyle(
+                    brush = Brush.linearGradient(
+                        colors = listOf(
+                            Color(0xFFFF69B4), // Neon Pink
+                            Color(0xFF4C4CFF), // Neon Blue
+                            Color(0xFF00FF00)  // Neon Green
+                        )
+                    ),
+                    fontSize = 42.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            )
+        }
+    }
+}
