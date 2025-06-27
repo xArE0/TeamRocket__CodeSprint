@@ -78,4 +78,12 @@ dependencies {
 
     // Splash Screen API
     implementation(libs.androidx.core.splashscreen)
+
+    //Image hosting Imgbb dependencies
+    implementation (libs.okhttp)       //(for HTTP requests)
+    implementation (libs.androidx.activity.compose.v172)     //(for image picker)
+
+    // Coil for image loading
+    implementation(libs.coil.compose)
+
 }

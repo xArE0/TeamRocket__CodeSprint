@@ -1,5 +1,7 @@
 [versions]
+activityComposeVersion = "1.7.2"
 agp = "8.11.0"
+coilCompose = "2.7.0"
 coreSplashscreen = "1.0.1"
 datastorePreferences = "1.1.7"
 kotlin = "2.0.0"
@@ -18,13 +20,16 @@ datastoreCoreAndroid = "1.1.7"
 datastorePreferencesCoreAndroid = "1.1.7"
 firebaseAuthCommon = "9.8.0"
 firebaseAuthKtx = "23.2.1"
+okhttp = "4.12.0"
 playServicesAuth = "21.3.0"
 firebaseFirestoreKtx = "25.1.4"
 
 [libraries]
+androidx-activity-compose-v172 = { module = "androidx.activity:activity-compose", version.ref = "activityComposeVersion" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }
+coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
@@ -45,6 +50,7 @@ androidx-datastore-preferences-core-android = { group = "androidx.datastore", na
 firebase-auth-common = { group = "com.google.firebase", name = "firebase-auth-common", version.ref = "firebaseAuthCommon" }
 firebase-auth-ktx = { group = "com.google.firebase", name = "firebase-auth-ktx", version.ref = "firebaseAuthKtx" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
+okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 play-services-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "playServicesAuth" }
 firebase-firestore-ktx = { group = "com.google.firebase", name = "firebase-firestore-ktx", version.ref = "firebaseFirestoreKtx" }
 

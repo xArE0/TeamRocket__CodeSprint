@@ -36,7 +36,8 @@ import kotlinx.coroutines.tasks.await
 data class User(
     val fullName: String = "",
     val email: String = "",
-    val mobileNumber: String = ""
+    val mobileNumber: String = "",
+    val imageUrl: String? = null // Add this field
 )
 
 /*-------------------------------------------Main Class to Fetch Data from Firebase-----------------------------------*/
@@ -51,12 +52,19 @@ class FirebaseDataClass {
                 User(
                     fullName = data?.get("fullName") as? String ?: "",
                     email = data?.get("email") as? String ?: "",
-                    mobileNumber = data?.get("mobileNumber") as? String ?: ""
+                    mobileNumber = data?.get("mobileNumber") as? String ?: "",
+                    imageUrl = data?.get("imageUrl") as? String
                 )
             } else null
         } catch (e: Exception) {
             null
         }
+    }
+
+    suspend fun saveImageUrl(userId: String, imageUrl: String) {
+        firestore.collection("users").document(userId)
+            .update("imageUrl", imageUrl)
+            .await()
     }
 }
 

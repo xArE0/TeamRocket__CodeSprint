@@ -36,8 +36,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
-
-import androidx.compose.runtime.produceState
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.*
+import androidx.compose.ui.platform.LocalContext
+import coil.compose.AsyncImage
+import kotlinx.coroutines.withContext
+import okhttp3.*
+import java.io.InputStream
 import androidx.compose.runtime.remember
 import kotlinx.coroutines.Dispatchers
 
@@ -50,10 +57,42 @@ fun Homepage(
 ) {
     val firebaseData = remember { FirebaseDataClass() }
     val userId = sessionState.userId
+    var userData by remember { mutableStateOf<User?>(null) }
+    var isUploading by remember { mutableStateOf(false) }
+    var uploadError by remember { mutableStateOf<String?>(null) }
+    val context = LocalContext.current
 
-    val userData by produceState<User?>(initialValue = null, userId) {
+    var pickedImageUri by remember { mutableStateOf<Uri?>(null) }
+
+    // Image picker launcher
+    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+        if (uri != null && userId != null) {
+            pickedImageUri = uri
+        }
+    }
+
+    // Handle image upload when pickedImageUri changes
+    LaunchedEffect(pickedImageUri) {
+        val uri = pickedImageUri
+        if (uri != null && userId != null) {
+            isUploading = true
+            uploadError = null
+            val imageUrl = uploadImageToImgbb(context, uri, "a6e0328f93227efb26846c08025e6749")
+            if (imageUrl != null) {
+                firebaseData.saveImageUrl(userId, imageUrl)
+                userData = firebaseData.fetchUserData(userId)
+            } else {
+                uploadError = "Upload failed"
+            }
+            isUploading = false
+            pickedImageUri = null
+        }
+    }
+
+    // Fetch user data
+    LaunchedEffect(userId) {
         if (userId != null) {
-            value = firebaseData.fetchUserData(userId)
+            userData = firebaseData.fetchUserData(userId)
         }
     }
 
@@ -75,9 +114,47 @@ fun Homepage(
                 Text("Full Name: ${userData?.fullName ?: "N/A"}")
                 Text("Email: ${userData?.email ?: "N/A"}")
                 Text("Mobile: ${userData?.mobileNumber ?: "N/A"}")
+                userData?.imageUrl?.let { url ->
+                    Spacer(modifier = Modifier.height(16.dp))
+                    AsyncImage(model = url, contentDescription = "Uploaded Image", modifier = Modifier.height(200.dp))
+                }
             } else if (userId != null) {
                 Text("Loading user data...")
             }
+            Spacer(modifier = Modifier.height(16.dp))
+            if (isUploading) {
+                Text("Uploading image...")
+            }
+            uploadError?.let { Text("Error: $it", color = androidx.compose.ui.graphics.Color.Red) }
+            androidx.compose.material3.Button(onClick = { launcher.launch("image/*") }) {
+                Text("Upload Image")
+            }
+        }
+    }
+}
+
+// Helper function to upload image to imgbb
+suspend fun uploadImageToImgbb(context: android.content.Context, uri: Uri, apiKey: String): String? {
+    return withContext(Dispatchers.IO) {
+        try {
+            val inputStream: InputStream? = context.contentResolver.openInputStream(uri)
+            val bytes = inputStream?.readBytes() ?: return@withContext null
+            val base64 = android.util.Base64.encodeToString(bytes, android.util.Base64.DEFAULT)
+            val client = OkHttpClient()
+            val requestBody = FormBody.Builder()
+                .add("key", apiKey)
+                .add("image", base64)
+                .build()
+            val request = Request.Builder()
+                .url("https://api.imgbb.com/1/upload")
+                .post(requestBody)
+                .build()
+            val response = client.newCall(request).execute()
+            val responseBody = response.body?.string()
+            val imageUrl = Regex("\"url\":\"([^\"]+)\"").find(responseBody ?: "")?.groupValues?.get(1)
+            imageUrl
+        } catch (e: Exception) {
+            null
         }
     }
 }
