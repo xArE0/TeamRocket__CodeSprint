@@ -9,10 +9,17 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Assignment
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Agriculture
+import androidx.compose.material.icons.filled.Assessment
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.LocalDrink
+import androidx.compose.material.icons.filled.MedicalServices
+import androidx.compose.material.icons.filled.Pets
+import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.paint
@@ -31,16 +38,25 @@ fun Homepage(
     sessionViewModel: SessionViewModel,
     sessionState: SessionState
 ) {
-    // Custom background from drawable folder
-    // Replace R.drawable.your_background_name with your actual drawable resource
     val backgroundPainter = painterResource(id = R.drawable.farm__background)
+    val userId = sessionState.userId
+    var userName by remember { mutableStateOf<String?>(null) }
+    val scope = rememberCoroutineScope()
+
+    // Fetch user name from Firestore
+    LaunchedEffect(userId) {
+        if (!userId.isNullOrEmpty()) {
+            val user = FirebaseDataClass().fetchUserData(userId)
+            userName = user?.fullName ?: "Farmer"
+        }
+    }
 
     Scaffold(
         containerColor = Color.Transparent,
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { /* Add new cattle */ },
-                containerColor = Color(0xFF2E7D32), // Forest green
+                containerColor = Color(0xFF2E7D32).copy(alpha = 0.85f),
                 shape = CircleShape,
                 elevation = FloatingActionButtonDefaults.elevation(8.dp)
             ) {
@@ -52,7 +68,10 @@ fun Homepage(
                 )
             }
         },
-        bottomBar = { FarmBottomNavigationBar() }
+        bottomBar = {  FarmBottomNavigationBar(
+            navController = navController,
+            currentRoute = navController.currentBackStackEntry?.destination?.route)
+        }
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -63,30 +82,23 @@ fun Homepage(
                 )
                 .padding(innerPadding)
         ) {
-            // Header Section
-            FarmHeader()
-
-            // Quick Stats Cards
+            FarmHeader(userName)
             QuickStatsSection()
-
-            // Farm Actions Grid
             FarmActionsSection()
-
-            // Recent Activity (Optional)
             RecentActivitySection()
         }
     }
 }
 
 @Composable
-fun FarmHeader() {
+fun FarmHeader(userName: String?) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(20.dp)
     ) {
         Text(
-            "🌾 Good Morning, Farmer!",
+            "🌾 Good Morning, ${userName ?: "Farmer"}!",
             color = Color(0xFF1B5E20),
             fontSize = 26.sp,
             fontWeight = FontWeight.Bold
@@ -127,7 +139,7 @@ fun StatsCardItem(stats: StatsCard) {
             .width(140.dp)
             .height(100.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.92f)),
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
         Column(
@@ -186,7 +198,6 @@ fun FarmActionsSection() {
             FarmAction(Icons.Filled.Assessment, "Reports", "Analytics & insights", Color(0xFF9C27B0))
         )
 
-        // Create grid layout
         for (i in actions.indices step 2) {
             Row(
                 modifier = Modifier
@@ -222,7 +233,7 @@ fun FarmActionCard(
             .height(80.dp)
             .clickable { /* Handle action click */ },
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.92f)),
         elevation = CardDefaults.cardElevation(2.dp)
     ) {
         Row(
@@ -288,7 +299,7 @@ fun RecentActivitySection() {
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
+            colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.92f)),
             elevation = CardDefaults.cardElevation(2.dp)
         ) {
             Column(
@@ -310,10 +321,17 @@ fun RecentActivitySection() {
 }
 
 @Composable
-fun FarmBottomNavigationBar() {
-    val selectedColor = Color(0xFF2E7D32) // Forest green
+fun FarmBottomNavigationBar(navController: NavController, currentRoute: String?) {
+    val selectedColor = Color(0xFF2E7D32)
     val unselectedColor = Color(0xFF8E8E8E)
-    val backgroundColor = Color.White
+    val backgroundColor = Color.White.copy(alpha = 0.85f)
+
+    val navItems = listOf(
+        Triple(Icons.Filled.Home, "Home", RouteHomepage::class.qualifiedName!!),
+        Triple(Icons.Filled.Pets, "Herd", RouteHerdPage::class.qualifiedName!!),
+        Triple(Icons.AutoMirrored.Filled.Assignment, "Tasks", RouteTasksPage::class.qualifiedName!!),
+        Triple(Icons.Outlined.Person, "Profile", RouteProfilePage::class.qualifiedName!!)
+    )
 
     Card(
         modifier = Modifier
@@ -330,30 +348,32 @@ fun FarmBottomNavigationBar() {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            val navItems = listOf(
-                Icons.Filled.Home to "Home",
-                Icons.Filled.Pets to "Herd",
-                Icons.AutoMirrored.Filled.Assignment to "Tasks",
-                Icons.Outlined.Person to "Profile"
-            )
-
-            navItems.forEachIndexed { index, (icon, label) ->
+            navItems.forEach { (icon, label, route) ->
+                val selected = currentRoute == route
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.clickable { /* Navigation logic */ }
+                    modifier = Modifier.clickable {
+                        if (!selected) {
+                            navController.navigate(route) {
+                                popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        }
+                    }
                 ) {
                     Icon(
                         icon,
                         contentDescription = label,
-                        tint = if (index == 0) selectedColor else unselectedColor,
+                        tint = if (selected) selectedColor else unselectedColor,
                         modifier = Modifier.size(24.dp)
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         label,
-                        color = if (index == 0) selectedColor else unselectedColor,
+                        color = if (selected) selectedColor else unselectedColor,
                         fontSize = 11.sp,
-                        fontWeight = if (index == 0) FontWeight.SemiBold else FontWeight.Normal
+                        fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal
                     )
                 }
             }
