@@ -15,6 +15,7 @@ activityCompose = "1.10.1"
 composeBom = "2024.04.01"
 googleGmsGoogleServices = "4.4.2"
 firebaseStorage = "21.0.2"
+materialIconsExtended = "1.7.8"
 navigationComposeAndroid = "2.9.0"
 datastoreCoreAndroid = "1.1.7"
 datastorePreferencesCoreAndroid = "1.1.7"
@@ -29,6 +30,7 @@ androidx-activity-compose-v172 = { module = "androidx.activity:activity-compose"
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }
+androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }

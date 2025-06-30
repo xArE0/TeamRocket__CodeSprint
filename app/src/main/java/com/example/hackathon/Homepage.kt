@@ -18,35 +18,24 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.FloatingActionButtonDefaults
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.navigation.compose.currentBackStackEntryAsState
-import android.net.Uri
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.runtime.*
-import androidx.compose.ui.platform.LocalContext
-import coil.compose.AsyncImage
-import kotlinx.coroutines.withContext
 import okhttp3.*
-import java.io.InputStream
-import androidx.compose.runtime.remember
-import kotlinx.coroutines.Dispatchers
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.*
+import androidx.compose.material3.Icon
 
 /*-------------------------------------------Homepage UI--------------------------------------------------*/
 @Composable
@@ -55,201 +44,240 @@ fun Homepage(
     sessionViewModel: SessionViewModel,
     sessionState: SessionState
 ) {
-    val firebaseData = remember { FirebaseDataClass() }
-    val userId = sessionState.userId
-    var userData by remember { mutableStateOf<User?>(null) }
-    var isUploading by remember { mutableStateOf(false) }
-    var uploadError by remember { mutableStateOf<String?>(null) }
-    val context = LocalContext.current
-
-    var pickedImageUri by remember { mutableStateOf<Uri?>(null) }
-
-    // Image picker launcher
-    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-        if (uri != null && userId != null) {
-            pickedImageUri = uri
-        }
-    }
-
-    // Handle image upload when pickedImageUri changes
-    LaunchedEffect(pickedImageUri) {
-        val uri = pickedImageUri
-        if (uri != null && userId != null) {
-            isUploading = true
-            uploadError = null
-            val imageUrl = uploadImageToImgbb(context, uri, "a6e0328f93227efb26846c08025e6749")
-            if (imageUrl != null) {
-                firebaseData.saveImageUrl(userId, imageUrl)
-                userData = firebaseData.fetchUserData(userId)
-            } else {
-                uploadError = "Upload failed"
-            }
-            isUploading = false
-            pickedImageUri = null
-        }
-    }
-
-    // Fetch user data
-    LaunchedEffect(userId) {
-        if (userId != null) {
-            userData = firebaseData.fetchUserData(userId)
-        }
-    }
-
+    val backgroundColor = Color(0xFF9DD6F6)
     Scaffold(
-        bottomBar = { BottomNavigationBar(navController) }
+        containerColor = backgroundColor,
+        bottomBar = { BottomNavigationBar() },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { /* TODO: Add main action */ },
+                containerColor = Color(0xFFFF8000),
+                shape = CircleShape,
+                modifier = Modifier.size(72.dp)
+            ) {
+                Icon(Icons.Filled.Add, contentDescription = "Add", tint = Color.White, modifier = Modifier.size(40.dp))
+            }
+        }
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(16.dp)
         ) {
-            Text(
-                text = "Welcome${userId?.let { ", $it" } ?: "!"}",
-                style = TextStyle(fontSize = 24.sp, fontWeight = FontWeight.Bold)
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            if (userData != null) {
-                Text("Full Name: ${userData?.fullName ?: "N/A"}")
-                Text("Email: ${userData?.email ?: "N/A"}")
-                Text("Mobile: ${userData?.mobileNumber ?: "N/A"}")
-                userData?.imageUrl?.let { url ->
-                    Spacer(modifier = Modifier.height(16.dp))
-                    AsyncImage(model = url, contentDescription = "Uploaded Image", modifier = Modifier.height(200.dp))
+            // Top Bar
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    Icons.Filled.Menu,
+                    contentDescription = "Menu",
+                    tint = Color.White,
+                    modifier = Modifier.size(32.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    "herdwatch",
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 32.sp
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Column(horizontalAlignment = Alignment.End) {
+                    Text("23°C", color = Color.White, fontWeight = FontWeight.Bold)
+                    Icon(
+                        Icons.Filled.Cloud,
+                        contentDescription = "Weather",
+                        tint = Color.White,
+                        modifier = Modifier.size(24.dp)
+                    )
                 }
-            } else if (userId != null) {
-                Text("Loading user data...")
             }
+
+            // Herd count
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(start = 24.dp, bottom = 8.dp)
+            ) {
+                Icon(
+                    Icons.Filled.Pets,
+                    contentDescription = "Herd",
+                    tint = Color.White,
+                    modifier = Modifier.size(48.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("0", fontSize = 36.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                Spacer(modifier = Modifier.width(4.dp))
+                Text("in herd", fontSize = 20.sp, color = Color.White, fontWeight = FontWeight.Bold, modifier = Modifier.offset(y = 6.dp))
+            }
+
+            // Search bar
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .background(Color.White, shape = RoundedCornerShape(32.dp))
+                    .height(56.dp),
+                contentAlignment = Alignment.CenterStart
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    Icon(
+                        Icons.Filled.Search,
+                        contentDescription = "Search",
+                        tint = Color.Gray,
+                        modifier = Modifier.padding(start = 16.dp)
+                    )
+                    Text(
+                        "What would you like to do?",
+                        color = Color.Gray,
+                        fontSize = 18.sp,
+                        modifier = Modifier.padding(start = 8.dp)
+                    )
+                    Spacer(modifier = Modifier.weight(1f))
+                    Box(
+                        modifier = Modifier
+                            .padding(end = 8.dp)
+                            .size(48.dp)
+                            .background(Color(0xFFFF8000), shape = CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            Icons.Filled.Mic,
+                            contentDescription = "Voice",
+                            tint = Color.White,
+                            modifier = Modifier.size(28.dp)
+                        )
+                    }
+                }
+            }
+
             Spacer(modifier = Modifier.height(16.dp))
-            if (isUploading) {
-                Text("Uploading image...")
+
+            // Main grid
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp)
+            ) {
+                val gridItems = listOf(
+                    Icons.Filled.CheckCircle to "Animal Records",
+                    Icons.Filled.LocalDrink to "Dairy Performance",
+                    Icons.Filled.Male to "Breeding",
+                    Icons.Filled.Map to "Pasture & Maps",
+                    Icons.Filled.Assignment to "Management",
+                    Icons.Filled.Description to "Reports"
+                )
+                for (row in 0..2) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        for (col in 0..1) {
+                            val index = row * 2 + col
+                            val (icon, label) = gridItems[index]
+                            Box(
+                                modifier = Modifier
+                                    .padding(8.dp)
+                                    .size(160.dp, 120.dp)
+                                    .background(Color.White, shape = RoundedCornerShape(20.dp))
+                                    .clickable { /* TODO: Handle click */ },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Icon(
+                                        icon,
+                                        contentDescription = label,
+                                        tint = Color(0xFF0077B6),
+                                        modifier = Modifier.size(48.dp)
+                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Text(label, color = Color.Black, fontSize = 20.sp)
+                                }
+                            }
+                        }
+                    }
+                }
             }
-            uploadError?.let { Text("Error: $it", color = androidx.compose.ui.graphics.Color.Red) }
-            androidx.compose.material3.Button(onClick = { launcher.launch("image/*") }) {
-                Text("Upload Image")
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Quick actions
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                val quickActions = listOf(
+                    Icons.Filled.Pets to "Add animal",
+                    Icons.Filled.MedicalServices to "Medicine Purchase",
+                    Icons.Filled.Vaccines to "Cattle Treatment"
+                )
+                quickActions.forEach { (icon, label) ->
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Box(
+                            modifier = Modifier.size(64.dp),
+                            contentAlignment = Alignment.BottomEnd
+                        ) {
+                            Icon(
+                                icon,
+                                contentDescription = label,
+                                tint = Color(0xFF0077B6),
+                                modifier = Modifier.size(48.dp)
+                            )
+                            Box(
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .background(Color(0xFFFF8000), shape = CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text("+", color = Color.White, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                        Text(label, color = Color.Black, fontSize = 14.sp)
+                    }
+                }
             }
         }
     }
 }
 
-// Helper function to upload image to imgbb
-suspend fun uploadImageToImgbb(context: android.content.Context, uri: Uri, apiKey: String): String? {
-    return withContext(Dispatchers.IO) {
-        try {
-            val inputStream: InputStream? = context.contentResolver.openInputStream(uri)
-            val bytes = inputStream?.readBytes() ?: return@withContext null
-            val base64 = android.util.Base64.encodeToString(bytes, android.util.Base64.DEFAULT)
-            val client = OkHttpClient()
-            val requestBody = FormBody.Builder()
-                .add("key", apiKey)
-                .add("image", base64)
-                .build()
-            val request = Request.Builder()
-                .url("https://api.imgbb.com/1/upload")
-                .post(requestBody)
-                .build()
-            val response = client.newCall(request).execute()
-            val responseBody = response.body?.string()
-            val imageUrl = Regex("\"url\":\"([^\"]+)\"").find(responseBody ?: "")?.groupValues?.get(1)
-            imageUrl
-        } catch (e: Exception) {
-            null
-        }
-    }
-}
-
-/*-------------------------------------------Bottom Navigation Bar--------------------------------------------------*/
 @Composable
-fun BottomNavigationBar(navController: NavController) {
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.route
-    val surfaceColor = MaterialTheme.colorScheme.surface
-
-    val items = listOf(
-        Triple(R.drawable.home_icon, "Home", RouteHomepage),
-        Triple(R.drawable.menu, "Signup", RouteSignupScreen),
-        Triple(R.drawable.saved_icon, "Login", RouteLoginScreen),
-    )
-
-    //Bottom Bar
+fun BottomNavigationBar() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(70.dp)
-            .padding(bottom = 12.dp)
+            .height(72.dp)
+            .background(Color.White)
     ) {
-        // Bottom Navigation Background
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(surfaceColor)
-        )
-
-        // Navigation Items
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 8.dp),
+                .align(Alignment.Center),
             horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            items.forEachIndexed { index, (icon, label, route) ->
-                if (index == 2) {
-                    Spacer(modifier = Modifier.width(80.dp).clip(RoundedCornerShape(16.dp)))
-                }
-
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
+            Icon(Icons.Filled.Apps, contentDescription = "Apps", tint = Color.Gray)
+            Icon(Icons.Filled.Home, contentDescription = "Home", tint = Color(0xFF0077B6))
+            Icon(Icons.Filled.Pets, contentDescription = "My Herd", tint = Color.Gray)
+            Box {
+                Icon(Icons.Filled.Assignment, contentDescription = "Watchboard", tint = Color.Gray)
+                Box(
                     modifier = Modifier
-                        .weight(1f)
-                        .clickable {
-                            navController.navigate(route) {
-                                popUpTo(navController.graph.startDestinationId)
-                                launchSingleTop = true
-                            }
-                        }
+                        .size(18.dp)
+                        .background(Color(0xFFFF8000), shape = CircleShape)
+                        .align(Alignment.TopEnd),
+                    contentAlignment = Alignment.Center
                 ) {
-                    val selected = currentRoute == route
-                    Image(
-                        painter = painterResource(id = icon),
-                        contentDescription = label,
-                        colorFilter = if (selected) ColorFilter.tint(MaterialTheme.colorScheme.primary) else null,
-                        modifier = Modifier.size(24.dp)
-                    )
-                    Text(
-                        text = label,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = if (selected) MaterialTheme.colorScheme.primary
-                        else MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    Text("6", color = Color.White, fontSize = 12.sp)
                 }
             }
+            Icon(Icons.Filled.Help, contentDescription = "Help", tint = Color.Gray)
         }
-
-        FloatingActionButton(
-            onClick = {
-                navController.navigate(RouteSignupScreen) {
-                    launchSingleTop = true
-                }
-            },
-            modifier = Modifier
-                .size(64.dp)
-                .align(Alignment.TopCenter)
-                .offset(y = (-34).dp),
-            shape = CircleShape,
-            elevation = FloatingActionButtonDefaults.elevation(
-                defaultElevation = 8.dp,
-                pressedElevation = 15.dp
-            )
-        ) {
-            Image(
-                painter = painterResource(R.drawable.add_icon),
-                contentDescription = "Add Button",
-                modifier = Modifier.size(64.dp)
-            )
-        }
-
     }
 }
