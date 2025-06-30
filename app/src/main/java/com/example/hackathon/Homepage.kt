@@ -1,246 +1,211 @@
 package com.example.hackathon
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Assignment
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.paint
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import okhttp3.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
-import androidx.compose.material3.Icon
 
-/*-------------------------------------------Homepage UI--------------------------------------------------*/
 @Composable
 fun Homepage(
     navController: NavController,
     sessionViewModel: SessionViewModel,
     sessionState: SessionState
 ) {
-    val backgroundColor = Color(0xFF9DD6F6)
+    // Custom background from drawable folder
+    // Replace R.drawable.your_background_name with your actual drawable resource
+    val backgroundPainter = painterResource(id = R.drawable.farm__background)
+
     Scaffold(
-        containerColor = backgroundColor,
-        bottomBar = { BottomNavigationBar() },
+        containerColor = Color.Transparent,
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { /* TODO: Add main action */ },
-                containerColor = Color(0xFFFF8000),
+                onClick = { /* Add new cattle */ },
+                containerColor = Color(0xFF2E7D32), // Forest green
                 shape = CircleShape,
-                modifier = Modifier.size(72.dp)
+                elevation = FloatingActionButtonDefaults.elevation(8.dp)
             ) {
-                Icon(Icons.Filled.Add, contentDescription = "Add", tint = Color.White, modifier = Modifier.size(40.dp))
+                Icon(
+                    Icons.Filled.Add,
+                    contentDescription = "Add Cattle",
+                    tint = Color.White,
+                    modifier = Modifier.size(28.dp)
+                )
             }
-        }
+        },
+        bottomBar = { FarmBottomNavigationBar() }
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .paint(
+                    painter = backgroundPainter,
+                    contentScale = ContentScale.Crop
+                )
                 .padding(innerPadding)
         ) {
-            // Top Bar
+            // Header Section
+            FarmHeader()
+
+            // Quick Stats Cards
+            QuickStatsSection()
+
+            // Farm Actions Grid
+            FarmActionsSection()
+
+            // Recent Activity (Optional)
+            RecentActivitySection()
+        }
+    }
+}
+
+@Composable
+fun FarmHeader() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(20.dp)
+    ) {
+        Text(
+            "🌾 Good Morning, Farmer!",
+            color = Color(0xFF1B5E20),
+            fontSize = 26.sp,
+            fontWeight = FontWeight.Bold
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            "Manage your herd with ease",
+            color = Color(0xFF2E7D32),
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Medium
+        )
+    }
+}
+
+@Composable
+fun QuickStatsSection() {
+    val stats = listOf(
+        StatsCard("Total Cattle", "0", "🐄", Color(0xFF4CAF50)),
+        StatsCard("Milk Today", "0 L", "🥛", Color(0xFF2196F3)),
+        StatsCard("Pregnant", "0", "🤱", Color(0xFFFF9800)),
+        StatsCard("Health Alerts", "0", "⚕️", Color(0xFFF44336))
+    )
+
+    LazyRow(
+        modifier = Modifier.padding(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        items(stats) { stat ->
+            StatsCardItem(stat)
+        }
+    }
+}
+
+@Composable
+fun StatsCardItem(stats: StatsCard) {
+    Card(
+        modifier = Modifier
+            .width(140.dp)
+            .height(100.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(4.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(12.dp),
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
             ) {
-                Icon(
-                    Icons.Filled.Menu,
-                    contentDescription = "Menu",
-                    tint = Color.White,
-                    modifier = Modifier.size(32.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    "herdwatch",
-                    color = Color.White,
+                    stats.emoji,
+                    fontSize = 20.sp
+                )
+            }
+            Column {
+                Text(
+                    stats.value,
+                    fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 32.sp
+                    color = stats.color
                 )
-                Spacer(modifier = Modifier.weight(1f))
-                Column(horizontalAlignment = Alignment.End) {
-                    Text("23°C", color = Color.White, fontWeight = FontWeight.Bold)
-                    Icon(
-                        Icons.Filled.Cloud,
-                        contentDescription = "Weather",
-                        tint = Color.White,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
+                Text(
+                    stats.title,
+                    fontSize = 12.sp,
+                    color = Color.Gray,
+                    fontWeight = FontWeight.Medium
+                )
             }
+        }
+    }
+}
 
-            // Herd count
+@Composable
+fun FarmActionsSection() {
+    Column(
+        modifier = Modifier.padding(16.dp)
+    ) {
+        Text(
+            "Farm Management",
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF1B5E20),
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+
+        val actions = listOf(
+            FarmAction(Icons.Filled.Pets, "Herd Records", "Manage cattle profiles", Color(0xFF4CAF50)),
+            FarmAction(Icons.Filled.LocalDrink, "Milk Production", "Track daily milk yield", Color(0xFF2196F3)),
+            FarmAction(Icons.Filled.Favorite, "Breeding", "Breeding management", Color(0xFFE91E63)),
+            FarmAction(Icons.Filled.MedicalServices, "Health", "Health monitoring", Color(0xFFF44336)),
+            FarmAction(Icons.Filled.Agriculture, "Feed Management", "Feed schedules & costs", Color(0xFF8BC34A)),
+            FarmAction(Icons.Filled.Assessment, "Reports", "Analytics & insights", Color(0xFF9C27B0))
+        )
+
+        // Create grid layout
+        for (i in actions.indices step 2) {
             Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(start = 24.dp, bottom = 8.dp)
-            ) {
-                Icon(
-                    Icons.Filled.Pets,
-                    contentDescription = "Herd",
-                    tint = Color.White,
-                    modifier = Modifier.size(48.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("0", fontSize = 36.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                Spacer(modifier = Modifier.width(4.dp))
-                Text("in herd", fontSize = 20.sp, color = Color.White, fontWeight = FontWeight.Bold, modifier = Modifier.offset(y = 6.dp))
-            }
-
-            // Search bar
-            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .background(Color.White, shape = RoundedCornerShape(32.dp))
-                    .height(56.dp),
-                contentAlignment = Alignment.CenterStart
+                    .padding(bottom = 12.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    Icon(
-                        Icons.Filled.Search,
-                        contentDescription = "Search",
-                        tint = Color.Gray,
-                        modifier = Modifier.padding(start = 16.dp)
+                FarmActionCard(
+                    action = actions[i],
+                    modifier = Modifier.weight(1f)
+                )
+
+                if (i + 1 < actions.size) {
+                    FarmActionCard(
+                        action = actions[i + 1],
+                        modifier = Modifier.weight(1f)
                     )
-                    Text(
-                        "What would you like to do?",
-                        color = Color.Gray,
-                        fontSize = 18.sp,
-                        modifier = Modifier.padding(start = 8.dp)
-                    )
+                } else {
                     Spacer(modifier = Modifier.weight(1f))
-                    Box(
-                        modifier = Modifier
-                            .padding(end = 8.dp)
-                            .size(48.dp)
-                            .background(Color(0xFFFF8000), shape = CircleShape),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            Icons.Filled.Mic,
-                            contentDescription = "Voice",
-                            tint = Color.White,
-                            modifier = Modifier.size(28.dp)
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Main grid
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp)
-            ) {
-                val gridItems = listOf(
-                    Icons.Filled.CheckCircle to "Animal Records",
-                    Icons.Filled.LocalDrink to "Dairy Performance",
-                    Icons.Filled.Male to "Breeding",
-                    Icons.Filled.Map to "Pasture & Maps",
-                    Icons.Filled.Assignment to "Management",
-                    Icons.Filled.Description to "Reports"
-                )
-                for (row in 0..2) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceEvenly
-                    ) {
-                        for (col in 0..1) {
-                            val index = row * 2 + col
-                            val (icon, label) = gridItems[index]
-                            Box(
-                                modifier = Modifier
-                                    .padding(8.dp)
-                                    .size(160.dp, 120.dp)
-                                    .background(Color.White, shape = RoundedCornerShape(20.dp))
-                                    .clickable { /* TODO: Handle click */ },
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    Icon(
-                                        icon,
-                                        contentDescription = label,
-                                        tint = Color(0xFF0077B6),
-                                        modifier = Modifier.size(48.dp)
-                                    )
-                                    Spacer(modifier = Modifier.height(8.dp))
-                                    Text(label, color = Color.Black, fontSize = 20.sp)
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Quick actions
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                val quickActions = listOf(
-                    Icons.Filled.Pets to "Add animal",
-                    Icons.Filled.MedicalServices to "Medicine Purchase",
-                    Icons.Filled.Vaccines to "Cattle Treatment"
-                )
-                quickActions.forEach { (icon, label) ->
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Box(
-                            modifier = Modifier.size(64.dp),
-                            contentAlignment = Alignment.BottomEnd
-                        ) {
-                            Icon(
-                                icon,
-                                contentDescription = label,
-                                tint = Color(0xFF0077B6),
-                                modifier = Modifier.size(48.dp)
-                            )
-                            Box(
-                                modifier = Modifier
-                                    .size(24.dp)
-                                    .background(Color(0xFFFF8000), shape = CircleShape),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text("+", color = Color.White, fontWeight = FontWeight.Bold)
-                            }
-                        }
-                        Text(label, color = Color.Black, fontSize = 14.sp)
-                    }
                 }
             }
         }
@@ -248,36 +213,165 @@ fun Homepage(
 }
 
 @Composable
-fun BottomNavigationBar() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(72.dp)
-            .background(Color.White)
+fun FarmActionCard(
+    action: FarmAction,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier
+            .height(80.dp)
+            .clickable { /* Handle action click */ },
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(2.dp)
     ) {
         Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.Center),
-            horizontalArrangement = Arrangement.SpaceEvenly,
+                .fillMaxSize()
+                .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(Icons.Filled.Apps, contentDescription = "Apps", tint = Color.Gray)
-            Icon(Icons.Filled.Home, contentDescription = "Home", tint = Color(0xFF0077B6))
-            Icon(Icons.Filled.Pets, contentDescription = "My Herd", tint = Color.Gray)
-            Box {
-                Icon(Icons.Filled.Assignment, contentDescription = "Watchboard", tint = Color.Gray)
-                Box(
-                    modifier = Modifier
-                        .size(18.dp)
-                        .background(Color(0xFFFF8000), shape = CircleShape)
-                        .align(Alignment.TopEnd),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("6", color = Color.White, fontSize = 12.sp)
-                }
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .background(
+                        action.color.copy(alpha = 0.1f),
+                        shape = CircleShape
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    action.icon,
+                    contentDescription = action.title,
+                    tint = action.color,
+                    modifier = Modifier.size(20.dp)
+                )
             }
-            Icon(Icons.Filled.Help, contentDescription = "Help", tint = Color.Gray)
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    action.title,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color(0xFF333333)
+                )
+                Text(
+                    action.description,
+                    fontSize = 11.sp,
+                    color = Color.Gray,
+                    maxLines = 1
+                )
+            }
         }
     }
 }
+
+@Composable
+fun RecentActivitySection() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+        Text(
+            "Recent Activity",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF1B5E20),
+            modifier = Modifier.padding(bottom = 12.dp)
+        )
+
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            elevation = CardDefaults.cardElevation(2.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Text(
+                    "No recent activity",
+                    color = Color.Gray,
+                    fontSize = 14.sp
+                )
+                Text(
+                    "Add your first cattle to get started!",
+                    color = Color.Gray,
+                    fontSize = 12.sp
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun FarmBottomNavigationBar() {
+    val selectedColor = Color(0xFF2E7D32) // Forest green
+    val unselectedColor = Color(0xFF8E8E8E)
+    val backgroundColor = Color.White
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(80.dp),
+        shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
+        colors = CardDefaults.cardColors(containerColor = backgroundColor),
+        elevation = CardDefaults.cardElevation(8.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 24.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            val navItems = listOf(
+                Icons.Filled.Home to "Home",
+                Icons.Filled.Pets to "Herd",
+                Icons.AutoMirrored.Filled.Assignment to "Tasks",
+                Icons.Outlined.Person to "Profile"
+            )
+
+            navItems.forEachIndexed { index, (icon, label) ->
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.clickable { /* Navigation logic */ }
+                ) {
+                    Icon(
+                        icon,
+                        contentDescription = label,
+                        tint = if (index == 0) selectedColor else unselectedColor,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        label,
+                        color = if (index == 0) selectedColor else unselectedColor,
+                        fontSize = 11.sp,
+                        fontWeight = if (index == 0) FontWeight.SemiBold else FontWeight.Normal
+                    )
+                }
+            }
+        }
+    }
+}
+
+// Data classes
+data class StatsCard(
+    val title: String,
+    val value: String,
+    val emoji: String,
+    val color: Color
+)
+
+data class FarmAction(
+    val icon: ImageVector,
+    val title: String,
+    val description: String,
+    val color: Color
+)
