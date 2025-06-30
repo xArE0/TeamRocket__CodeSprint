@@ -40,10 +40,26 @@ data class User(
     val imageUrl: String? = null // Add this field
 )
 
+// Cattle data class
+data class Cattle(
+    val tagNo: String = "",
+    val type: String = "",
+    val gender: String = "",
+    val breed: String = "",
+    val dob: String = "",
+    val tbDate: String = "",
+    val brDate: String = "",
+    val purpose: String = "",
+    val weight: String = "",
+    val color: String = "",
+    val notes: String = ""
+)
+
 /*-------------------------------------------Main Class to Fetch Data from Firebase-----------------------------------*/
 class FirebaseDataClass {
     private val firestore = FirebaseFirestore.getInstance()
 
+    // Function to fetch user data
     suspend fun fetchUserData(userId: String): User? {
         return try {
             val doc = firestore.collection("users").document(userId).get().await()
@@ -58,6 +74,29 @@ class FirebaseDataClass {
             } else null
         } catch (e: Exception) {
             null
+        }
+    }
+
+    // Function to add cattle data
+    suspend fun addCattle(userId: String, cattle: Cattle) {
+        firestore.collection("users")
+            .document(userId)
+            .collection("cattle")
+            .add(cattle)
+            .await()
+    }
+
+    // Function to fetch cattle list
+    suspend fun fetchCattleList(userId: String): List<Cattle> {
+        return try {
+            val snapshot = firestore.collection("users")
+                .document(userId)
+                .collection("cattle")
+                .get()
+                .await()
+            snapshot.documents.mapNotNull { it.toObject(Cattle::class.java) }
+        } catch (e: Exception) {
+            emptyList()
         }
     }
 
