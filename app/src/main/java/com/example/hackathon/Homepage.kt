@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 
+/*-------------------------------------------Main UI Function--------------------------------------------------*/
 @Composable
 fun Homepage(
     navController: NavController,
@@ -55,8 +56,10 @@ fun Homepage(
         containerColor = Color.Transparent,
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { /* Add new cattle */ },
-                containerColor = Color(0xFF2E7D32).copy(alpha = 0.85f),
+                onClick = { navController.navigate(AddCattleScreen) {
+                    launchSingleTop = true
+                }},
+                containerColor = Color(0xFF2E7D32), // Forest green
                 shape = CircleShape,
                 elevation = FloatingActionButtonDefaults.elevation(8.dp)
             ) {
@@ -320,6 +323,7 @@ fun RecentActivitySection() {
     }
 }
 
+/*-------------------------------------------Bottom Bar (Same For Every Page)--------------------------------------------------*/
 @Composable
 fun FarmBottomNavigationBar(navController: NavController, currentRoute: String?) {
     val selectedColor = Color(0xFF2E7D32)

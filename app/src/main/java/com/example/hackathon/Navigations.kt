@@ -65,6 +65,12 @@ fun MyAppNavigation(
                 sessionState = sessionState
             )
         }
+        composable<AddCattleScreen> {
+            AddNewAnimalScreen(
+                navController = navController,
+                sessionViewModel = sessionViewModel
+            )
+        }
     }
 }
 /*-------------------------------------------Serializable Routes Objects--------------------------------------------------*/
@@ -85,3 +91,6 @@ object RouteTasksPage
 
 @Serializable
 object RouteProfilePage
+
+@Serializable
+object AddCattleScreen
