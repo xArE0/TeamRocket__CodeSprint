@@ -18,14 +18,278 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 
-
 // --- Data class for heat detection info ---
 data class HeatDetectionInfo(
     val heatStartTime: String,
     val status: String,
     val aiRemainingHours: Int
 )
+// --- Main Herd Page Composable ---
+@Composable
+fun HerdPage(
+    navController: NavController,
+    sessionViewModel: SessionViewModel,
+    sessionState: SessionState
+) {
+    val userId = sessionState.userId
+    var cattleList by remember { mutableStateOf<List<Cattle>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(true) }
+    val tabTitles = listOf("Herd", "Insemination", "Dairy")
+    var selectedTabIndex by remember { mutableIntStateOf(0) }
 
+    LaunchedEffect(userId) {
+        if (!userId.isNullOrEmpty()) {
+            isLoading = true
+            cattleList = FirebaseDataClass().fetchCattleList(userId)
+            isLoading = false
+        }
+    }
+
+    Scaffold(
+        containerColor = Color(0xFFF9FAFB),
+        floatingActionButton = {
+            if (selectedTabIndex == 0) {
+                FloatingActionButton(
+                    onClick = { navController.navigate(AddCattleScreen) { launchSingleTop = true } },
+                    containerColor = Color(0xFF43A047),
+                    shape = CircleShape,
+                    elevation = FloatingActionButtonDefaults.elevation(8.dp)
+                ) {
+                    Icon(
+                        Icons.Filled.Add,
+                        contentDescription = "Add Animal",
+                        tint = Color.White,
+                        modifier = Modifier.size(28.dp)
+                    )
+                }
+            }
+        },
+        bottomBar = {
+            FarmBottomNavigationBar(
+                navController = navController,
+                currentRoute = navController.currentBackStackEntry?.destination?.route
+            )
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+            Text(
+                text = "🐄 Your Herd",
+                style = MaterialTheme.typography.headlineSmall,
+                color = Color(0xFF1B5E20),
+                modifier = Modifier.padding(start = 20.dp, top = 20.dp, bottom = 8.dp)
+            )
+
+            TabRow(
+                selectedTabIndex = selectedTabIndex,
+                containerColor = Color.White,
+                contentColor = Color(0xFF2E7D32),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                tabTitles.forEachIndexed { index, title ->
+                    Tab(
+                        selected = selectedTabIndex == index,
+                        onClick = { selectedTabIndex = index },
+                        modifier = Modifier.weight(1f),
+                        text = {
+                            Text(
+                                title,
+                                color = if (selectedTabIndex == index) Color(0xFF2E7D32) else Color.Gray,
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                        }
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            when (selectedTabIndex) {
+                0 -> {
+                    if (isLoading) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(color = Color(0xFF43A047))
+                        }
+                    } else if (cattleList.isEmpty()) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 32.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(20.dp),
+                                colors = CardDefaults.cardColors(containerColor = Color.White),
+                                elevation = CardDefaults.cardElevation(6.dp)
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(24.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Text(
+                                        "No animals in your herd yet.",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        color = Color.Gray
+                                    )
+                                }
+                            }
+                        }
+                    } else {
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 20.dp),
+                            verticalArrangement = Arrangement.spacedBy(14.dp)
+                        ) {
+                            items(cattleList) { cattle ->
+                                CattleCard(
+                                    cattle = cattle,
+                                    onClick = {
+                                        navController.navigate(RouteDetailsPage(tag = cattle.tagNo)),
+                                        userId = userId,
+                                        sessionViewModel = sessionViewModel,
+                                        sessionState = sessionState
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+
+                1 -> {
+                    if (isLoading) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(color = Color(0xFF43A047))
+                        }
+                    } else if (cattleList.isEmpty()) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 32.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(20.dp),
+                                colors = CardDefaults.cardColors(containerColor = Color.White),
+                                elevation = CardDefaults.cardElevation(6.dp)
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(24.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Text(
+                                        "No insemination records yet.",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        color = Color.Gray
+                                    )
+                                }
+                            }
+                        }
+                    } else {
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 20.dp),
+                            verticalArrangement = Arrangement.spacedBy(14.dp)
+                        ) {
+                            items(cattleList) { cattle ->
+                                InseminationCard(
+                                    cattle = cattle,
+                                    heatInfo = HeatDetectionInfo(
+                                        heatStartTime = "2023-10-01 08:00",
+                                        status = "Optimal",
+                                        aiRemainingHours = 26
+                                    ),
+                                    onClick = {
+                                        navController.navigate(RouteDetailsPage(tag = cattle.tagNo))
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+                2 -> ComingSoonCard("Dairy records coming soon.", Color(0xFF2196F3))
+            }
+        }
+    }
+}
+
+@Composable
+fun TakeActionDropdown(
+    cattleId: String,
+    userId: String,
+    onDismiss: () -> Unit
+) {
+    var lastHeatStart by remember { mutableStateOf("") }
+    var nextExpectedHeat by remember { mutableStateOf("") }
+    var lastInseminationDate by remember { mutableStateOf("") }
+    var pregnancyStatus by remember { mutableStateOf("") }
+    var heatCycleStage by remember { mutableStateOf("") }
+    var optimalBreedingWindow by remember { mutableStateOf("") }
+    var isSubmitting by remember { mutableStateOf(false) }
+    var error by remember { mutableStateOf<String?>(null) }
+
+    if (isSubmitting) {
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator()
+        }
+    } else {
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = { Text("Take Action") },
+            text = {
+                Column {
+                    OutlinedTextField(value = lastHeatStart, onValueChange = { lastHeatStart = it }, label = { Text("Last Heat Start") })
+                    OutlinedTextField(value = nextExpectedHeat, onValueChange = { nextExpectedHeat = it }, label = { Text("Next Expected Heat") })
+                    OutlinedTextField(value = lastInseminationDate, onValueChange = { lastInseminationDate = it }, label = { Text("Last Insemination Date") })
+                    OutlinedTextField(value = pregnancyStatus, onValueChange = { pregnancyStatus = it }, label = { Text("Pregnancy Status") })
+                    OutlinedTextField(value = heatCycleStage, onValueChange = { heatCycleStage = it }, label = { Text("Heat Cycle Stage") })
+                    OutlinedTextField(value = optimalBreedingWindow, onValueChange = { optimalBreedingWindow = it }, label = { Text("Optimal Breeding Window") })
+                    if (error != null) Text(error!!, color = Color.Red)
+                }
+            },
+            confirmButton = {
+                Button(onClick = {
+                    isSubmitting = true
+                    error = null
+                    // Save to Firestore
+                    saveCattleAction(
+                        userId = userId,
+                        cattleId = cattleId,
+                        lastHeatStart = lastHeatStart,
+                        nextExpectedHeat = nextExpectedHeat,
+                        lastInseminationDate = lastInseminationDate,
+                        pregnancyStatus = pregnancyStatus,
+                        heatCycleStage = heatCycleStage,
+                        optimalBreedingWindow = optimalBreedingWindow,
+                        onSuccess = {
+                            isSubmitting = false
+                            onDismiss()
+                        },
+                        onError = {
+                            isSubmitting = false
+                            error = it
+                        }
+                    )
+                }) { Text("Submit") }
+            },
+            dismissButton = {
+                OutlinedButton(onClick = onDismiss) { Text("Cancel") }
+            }
+        )
+    }
+}
 // --- Insemination Card Composable ---
 @Composable
 fun InseminationCard(
@@ -181,375 +445,90 @@ fun ComingSoonCard(message: String, color: Color) {
 
 // --- Cattle Card Composable ---
 @Composable
-fun CattleCard(cattle: Cattle, onClick: () -> Unit) {
+fun CattleCard(
+    cattle: Cattle,
+    userId: String,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit = { /* Default no-op */ }
+) {
+    var showActionDropdown by remember { mutableStateOf(false) }
+
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
-            .heightIn(min = 120.dp)
-            .clickable { onClick() },
+            .padding(vertical = 8.dp, horizontal = 16.dp),
         shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(6.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = "🐮 Tag: ${cattle.tagNo} • ${cattle.type} (${cattle.gender})",
-                style = MaterialTheme.typography.titleMedium,
-                color = Color(0xFF2E7D32)
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "Breed: ${cattle.breed}  |  DOB: ${cattle.dob}",
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color.DarkGray
-            )
-            if (cattle.weight.isNotBlank() || cattle.color.isNotBlank()) {
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = buildString {
-                        if (cattle.weight.isNotBlank()) append("Weight: ${cattle.weight}kg  ")
-                        if (cattle.color.isNotBlank()) append("Color: ${cattle.color}")
-                    },
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray
-                )
-            }
-            if (cattle.notes.isNotBlank()) {
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "📝 Notes: ${cattle.notes}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color(0xFF7A4EB3)
-                )
-            }
-        }
-    }
-}
-
-// --- Main Herd Page Composable ---
-@Composable
-fun HerdPage(
-    navController: NavController,
-    sessionViewModel: SessionViewModel,
-    sessionState: SessionState
-) {
-    val userId = sessionState.userId
-    var cattleList by remember { mutableStateOf<List<Cattle>>(emptyList()) }
-    var isLoading by remember { mutableStateOf(true) }
-    val tabTitles = listOf("Herd", "Insemination", "Dairy")
-    var selectedTabIndex by remember { mutableIntStateOf(0) }
-    var selectedCattleTagNo by remember { mutableStateOf<String?>(null) }
-    var selectedCattleTagNoForDelivery by remember { mutableStateOf<String?>(null) }
-
-    LaunchedEffect(userId) {
-        if (!userId.isNullOrEmpty()) {
-            isLoading = true
-            cattleList = FirebaseDataClass().fetchCattleList(userId)
-            isLoading = false
-        }
-    }
-
-    Scaffold(
-        containerColor = Color(0xFFF9FAFB),
-        floatingActionButton = {
-            if (selectedTabIndex == 0) {
-                FloatingActionButton(
-                    onClick = { navController.navigate(AddCattleScreen) { launchSingleTop = true } },
-                    containerColor = Color(0xFF43A047),
-                    shape = CircleShape,
-                    elevation = FloatingActionButtonDefaults.elevation(8.dp)
-                ) {
-                    Icon(
-                        Icons.Filled.Add,
-                        contentDescription = "Add Animal",
-                        tint = Color.White,
-                        modifier = Modifier.size(28.dp)
-                    )
-                }
-            }
-        },
-        bottomBar = {
-            FarmBottomNavigationBar(
-                navController = navController,
-                currentRoute = navController.currentBackStackEntry?.destination?.route
-            )
-        }
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-        ) {
-            Text(
-                text = "🐄 Your Herd",
-                style = MaterialTheme.typography.headlineSmall,
-                color = Color(0xFF1B5E20),
-                modifier = Modifier.padding(start = 20.dp, top = 20.dp, bottom = 8.dp)
-            )
-
-            TabRow(
-                selectedTabIndex = selectedTabIndex,
-                containerColor = Color.White,
-                contentColor = Color(0xFF2E7D32),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                tabTitles.forEachIndexed { index, title ->
-                    Tab(
-                        selected = selectedTabIndex == index,
-                        onClick = { selectedTabIndex = index },
-                        modifier = Modifier.weight(1f),
-                        text = {
-                            Text(
-                                title,
-                                color = if (selectedTabIndex == index) Color(0xFF2E7D32) else Color.Gray,
-                                modifier = Modifier.fillMaxWidth(),
-                            )
-                        }
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            when (selectedTabIndex) {
-                0 -> {
-                    if (isLoading) {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CircularProgressIndicator(color = Color(0xFF43A047))
-                        }
-                    } else if (cattleList.isEmpty()) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(horizontal = 32.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Card(
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(20.dp),
-                                colors = CardDefaults.cardColors(containerColor = Color.White),
-                                elevation = CardDefaults.cardElevation(6.dp)
-                            ) {
-                                Column(
-                                    modifier = Modifier.padding(24.dp),
-                                    horizontalAlignment = Alignment.CenterHorizontally
-                                ) {
-                                    Text(
-                                        "No animals in your herd yet.",
-                                        style = MaterialTheme.typography.titleMedium,
-                                        color = Color.Gray
-                                    )
-                                }
-                            }
-                        }
-                    } else {
-                        LazyColumn(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(horizontal = 20.dp),
-                            verticalArrangement = Arrangement.spacedBy(14.dp)
-                        ) {
-                            items(cattleList) { cattle ->
-                                CattleCard(
-                                    cattle = cattle,
-                                    onClick = {
-                                        navController.navigate(RouteDetailsPage(tag = cattle.tagNo))
-                                    }
-                                )
-                            }
-                        }
-                    }
-                }
-
-                1 -> {
-                    if (isLoading) {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CircularProgressIndicator(color = Color(0xFF43A047))
-                        }
-                    } else if (cattleList.isEmpty()) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(horizontal = 32.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Card(
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(20.dp),
-                                colors = CardDefaults.cardColors(containerColor = Color.White),
-                                elevation = CardDefaults.cardElevation(6.dp)
-                            ) {
-                                Column(
-                                    modifier = Modifier.padding(24.dp),
-                                    horizontalAlignment = Alignment.CenterHorizontally
-                                ) {
-                                    Text(
-                                        "No insemination records yet.",
-                                        style = MaterialTheme.typography.titleMedium,
-                                        color = Color.Gray
-                                    )
-                                }
-                            }
-                        }
-                    } else {
-                        LazyColumn(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(horizontal = 20.dp),
-                            verticalArrangement = Arrangement.spacedBy(14.dp)
-                        ) {
-                            // Inside the LazyColumn for tab 1
-                            items(cattleList) { cattle ->
-                                Column {
-                                    InseminationCard(
-                                        cattle = cattle,
-                                        heatInfo = HeatDetectionInfo(
-                                            heatStartTime = "2023-10-01 08:00",
-                                            status = "Optimal",
-                                            aiRemainingHours = 26
-                                        ),
-                                        onClick = { selectedCattleTagNo = cattle.tagNo }
-                                    )
-                                    if (selectedCattleTagNo == cattle.tagNo) {
-                                        HeatInfoFormInline(
-                                            cattleTagNo = cattle.tagNo,
-                                            onSubmit = { heatInfo ->
-                                                // Save heatInfo to Firestore here
-                                                selectedCattleTagNo = null // Close form after submit
-                                            },
-                                            onCancel = { selectedCattleTagNo = null }
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                2 -> {
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 20.dp),
-                        verticalArrangement = Arrangement.spacedBy(14.dp)
-                    ) {
-                        items(cattleList) { cattle ->
-                            Column {
-                                CattleCard(
-                                    cattle = cattle,
-                                    onClick = { selectedCattleTagNoForDelivery = cattle.tagNo }
-                                )
-                                if (selectedCattleTagNoForDelivery == cattle.tagNo) {
-//                                    DeliveryInfoFormInline(
-//                                        cattleTagNo = cattle.tagNo,
-//                                        onSubmit = { deliveryInfo ->
-//                                            // Save deliveryInfo to Firestore here
-//                                            selectedCattleTagNoForDelivery = null
-//                                        },
-//                                        onCancel = { selectedCattleTagNoForDelivery = null }
-//                                    )
-                                }
-                            }
-                        }
-                    }
-                }            }
-        }
-    }
-}
-
-@Composable
-fun HeatInfoFormInline(
-    cattleTagNo: String,
-    onSubmit: (HeatInfo) -> Unit,
-    onCancel: () -> Unit
-) {
-    var lastHeatStart by remember { mutableStateOf("") }
-    var nextExpectedHeat by remember { mutableStateOf("") }
-    var lastInseminationDate by remember { mutableStateOf("") }
-    var pregnancyStatus by remember { mutableStateOf("") }
-    var heatCycleStage by remember { mutableStateOf("") }
-    var optimalBreedingWindow by remember { mutableStateOf("") }
-
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text("Enter Heat Info for Tag: $cattleTagNo")
-            OutlinedTextField(value = lastHeatStart, onValueChange = { lastHeatStart = it }, label = { Text("Last Heat Start") })
-            OutlinedTextField(value = nextExpectedHeat, onValueChange = { nextExpectedHeat = it }, label = { Text("Next Expected Heat") })
-            OutlinedTextField(value = lastInseminationDate, onValueChange = { lastInseminationDate = it }, label = { Text("Last Insemination Date") })
-            OutlinedTextField(value = pregnancyStatus, onValueChange = { pregnancyStatus = it }, label = { Text("Pregnancy Status") })
-            OutlinedTextField(value = heatCycleStage, onValueChange = { heatCycleStage = it }, label = { Text("Heat Cycle Stage") })
-            OutlinedTextField(value = optimalBreedingWindow, onValueChange = { optimalBreedingWindow = it }, label = { Text("Optimal Breeding Window") })
-            Row {
-                Button(onClick = {
-                    onSubmit(
-                        HeatInfo(
-                            cattleTagNo = cattleTagNo,
-                            lastHeatStart = lastHeatStart,
-                            nextExpectedHeat = nextExpectedHeat,
-                            lastInseminationDate = lastInseminationDate,
-                            pregnancyStatus = pregnancyStatus,
-                            heatCycleStage = heatCycleStage,
-                            optimalBreedingWindow = optimalBreedingWindow
-                        )
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Circle with first letter of tagNo or fallback
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(CircleShape)
+                        .background(Color(0xFFB3D8F6)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = cattle.tagNo.takeIf { it.isNotBlank() }?.firstOrNull()?.toString() ?: "?",
+                        color = Color.White,
+                        style = MaterialTheme.typography.headlineMedium
                     )
-                }) { Text("Save") }
-                Spacer(modifier = Modifier.width(8.dp))
-                Button(onClick = onCancel) { Text("Cancel") }
+                }
+                Spacer(modifier = Modifier.width(16.dp))
+                Column {
+                    Text(
+                        text = cattle.tagNo,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = cattle.breed,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.Gray
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Gender: ${cattle.gender}", color = Color(0xFF2196F3))
+                Text("DOB: ${cattle.dob}", color = Color(0xFF388E3C))
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Weight: ${cattle.weight} kg", color = Color(0xFFFB8C00))
+                Text("Color: ${cattle.color}", color = Color(0xFFD81B60))
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(
+                onClick = { showActionDropdown = true },
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32))
+            ) {
+                Text("Take Action", color = Color.White)
             }
         }
     }
+
+    if (showActionDropdown) {
+        TakeActionDropdown(
+            cattleId = cattle.tagNo,
+            userId = userId,
+            onDismiss = { showActionDropdown = false }
+        )
+    }
 }
 
-//@Composable
-//fun DeliveryInfoFormInline(
-//    cattleTagNo: String,
-//    onSubmit: (DeliveryInfo) -> Unit,
-//    onCancel: () -> Unit
-//) {
-//    var deliveryDate by remember { mutableStateOf("") }
-//    var calfGender by remember { mutableStateOf("") }
-//    var complications by remember { mutableStateOf("") }
-//    var notes by remember { mutableStateOf("") }
-//
-//    Card(
-//        modifier = Modifier
-//            .fillMaxWidth()
-//            .padding(vertical = 8.dp),
-//        shape = RoundedCornerShape(12.dp),
-//        elevation = CardDefaults.cardElevation(4.dp)
-//    ) {
-//        Column(modifier = Modifier.padding(16.dp)) {
-//            Text("Enter Delivery Info for Tag: $cattleTagNo")
-//            OutlinedTextField(value = deliveryDate, onValueChange = { deliveryDate = it }, label = { Text("Delivery Date") })
-//            OutlinedTextField(value = calfGender, onValueChange = { calfGender = it }, label = { Text("Calf Gender") })
-//            OutlinedTextField(value = complications, onValueChange = { complications = it }, label = { Text("Complications") })
-//            OutlinedTextField(value = notes, onValueChange = { notes = it }, label = { Text("Notes") })
-//            Row {
-//                Button(onClick = {
-//                    onSubmit(
-//                        DeliveryInfo(
-//                            cattleTagNo = cattleTagNo,
-//                            deliveryDate = deliveryDate,
-//                            calfGender = calfGender,
-//                            complications = complications,
-//                            notes = notes
-//                        )
-//                    )
-//                }) { Text("Save") }
-//                Spacer(modifier = Modifier.width(8.dp))
-//                Button(onClick = onCancel) { Text("Cancel") }
-//            }
-//        }
-//    }
-//}

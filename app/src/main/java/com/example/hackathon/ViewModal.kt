@@ -138,6 +138,39 @@ class FirebaseDataClass {
             .await()
     }
 
+    fun saveCattleAction(
+        userId: String,
+        cattleId: String,
+        lastHeatStart: String,
+        nextExpectedHeat: String,
+        lastInseminationDate: String,
+        pregnancyStatus: String,
+        heatCycleStage: String,
+        optimalBreedingWindow: String,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        val firestore = com.google.firebase.firestore.FirebaseFirestore.getInstance()
+        val data = mapOf(
+            "lastHeatStart" to lastHeatStart,
+            "nextExpectedHeat" to nextExpectedHeat,
+            "lastInseminationDate" to lastInseminationDate,
+            "pregnancyStatus" to pregnancyStatus,
+            "heatCycleStage" to heatCycleStage,
+            "optimalBreedingWindow" to optimalBreedingWindow,
+            "timestamp" to com.google.firebase.Timestamp.now()
+        )
+        firestore.collection("users")
+            .document(userId)
+            .collection("cattle")
+            .document(cattleId)
+            .collection("actions")
+            .add(data)
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { onError(it.message ?: "Unknown error") }
+    }
+
+
     // Function to fetch cattle list
     suspend fun fetchCattleList(userId: String): List<Cattle> {
         return try {
