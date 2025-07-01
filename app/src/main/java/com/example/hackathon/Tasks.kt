@@ -23,6 +23,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.layout.FlowRow
 
 @Composable
 fun TasksPage(
@@ -32,6 +37,7 @@ fun TasksPage(
 ) {
     val tabTitles = listOf("Doctor", "Help", "Vaccination")
     var selectedTabIndex by remember { mutableIntStateOf(0) }
+    val predictionViewModel: PredictionViewModel = viewModel()
 
     Scaffold(
         containerColor = Color(0xFFF9FAFB),
@@ -81,8 +87,7 @@ fun TasksPage(
 
             when (selectedTabIndex) {
                 0 -> DoctorTabContent()
-                1 -> HelpTabContent()
-                2 -> VaccinationTabContent()
+                1 -> DiseasePredictionScreen(viewModel = predictionViewModel)                2 -> VaccinationTabContent()
             }
         }
     }
@@ -186,7 +191,8 @@ fun DoctorProfileCard(doctor: DoctorProfile, onClick: () -> Unit) {
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    IconButton(onClick = { /* Help */ }) {
+                    IconButton(onClick = { /* Help */
+                    }) {
                         Icon(
                             imageVector = Icons.Default.Help,
                             contentDescription = "Help",
@@ -241,5 +247,103 @@ fun VaccinationTabContent() {
         Column(modifier = Modifier.padding(24.dp)) {
             Text("Vaccination records coming soon!", color = Color(0xFFFBC02D))
         }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun DiseasePredictionScreen(viewModel: PredictionViewModel) {
+    var selectedAnimal by remember { mutableStateOf("cow") }
+    var age by remember { mutableStateOf("") }
+    var temperature by remember { mutableStateOf("") }
+    val selectedSymptoms = remember { mutableStateListOf<String>() }
+
+    val symptomsList = listOf(
+        "depression", "loss of appetite", "painless lumps", "swelling in limb",
+        "crackling sound", "blisters on gums", "difficulty walking", "blisters on tongue",
+        "lameness", "blisters on mouth", "sores on mouth", "sores on tongue", "fatigue",
+        "sweats", "shortness of breath", "chills", "swelling in extremities", "chest discomfort"
+    )
+
+    Column(modifier = Modifier.padding(16.dp)) {
+        Text("Animal Disease Predictor", fontSize = 22.sp, fontWeight = FontWeight.Bold)
+        DropdownMenuBox("Animal", listOf("cow", "buffalo", "sheep", "goat"), selectedAnimal) {
+            selectedAnimal = it
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        OutlinedTextField(value = age, onValueChange = { age = it }, label = { Text("Age (years)") })
+        OutlinedTextField(value = temperature, onValueChange = { temperature = it }, label = { Text("Temperature (F)") })
+        Spacer(modifier = Modifier.height(8.dp))
+        Text("Select Symptoms:")
+        FlowRow {
+            symptomsList.forEach { symptom ->
+                FilterChip(
+                    selected = selectedSymptoms.contains(symptom),
+                    onClick = {
+                        if (selectedSymptoms.contains(symptom)) selectedSymptoms.remove(symptom)
+                        else selectedSymptoms.add(symptom)
+                    },
+                    label = { Text(symptom) },
+                    modifier = Modifier.padding(4.dp)
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+        Button(onClick = {
+            viewModel.predictDisease(
+                selectedAnimal, age.toIntOrNull() ?: 0,
+                temperature.toFloatOrNull() ?: 0f,
+                selectedSymptoms.take(3)
+            )
+        }) {
+            Text("Predict Disease")
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        Text("Prediction: ${viewModel.prediction}", fontSize = 18.sp, fontWeight = FontWeight.Medium)
+    }
+}
+
+@Composable
+fun DropdownMenuBox(
+    label: String,
+    options: List<String>,
+    selectedOption: String,
+    onOptionSelected: (String) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+    Box {
+        OutlinedTextField(
+            value = selectedOption,
+            onValueChange = {},
+            label = { Text(label) },
+            readOnly = true,
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { expanded = true }
+        )
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            options.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(option) },
+                    onClick = {
+                        onOptionSelected(option)
+                        expanded = false
+                    }
+                )
+            }
+        }
+    }
+}
+
+
+class PredictionViewModel : ViewModel() {
+    var prediction by mutableStateOf("No prediction yet")
+        private set
+
+    fun predictDisease(animal: String, age: Int, temp: Float, symptoms: List<String>) {
+        prediction = "Likely disease for $animal with symptoms: ${symptoms.joinToString()}"
     }
 }
