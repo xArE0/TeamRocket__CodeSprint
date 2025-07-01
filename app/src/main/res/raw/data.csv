@@ -1,0 +1,36 @@
+CowID,Breed,LastHeatDate,InseminationDate,AIType,BullInfo,Pregnancy,ExpectedCalvingDate,CalvingDate,type,gender,breed,dob,tbDate,brDate,purpose,weight,color,notes,imageUrl,startDate,endDate,totalMilkProduced,CalculatedEndDate
+COW001,Gir,1/1/2020,1/3/2020,Artificial,BULL09,Pending,,,Cow,Female,Gir,5/10/2018,5/10/2019,6/10/2019,Milk,450,Brown,Docile and healthy,,,,0,
+COW001,Gir,12/31/2020,1/2/2021,Natural,BULL010,Negative,,,Cow,Female,Gir,5/10/2018,5/10/2019,6/10/2019,Milk,450,Brown,Docile and healthy,,,,0,
+COW001,Gir,12/31/2021,1/2/2022,Natural,BULL05,Negative,,,Cow,Female,Gir,5/10/2018,5/10/2019,6/10/2019,Milk,450,Brown,Docile and healthy,,,,0,
+COW001,Gir,12/31/2022,1/2/2023,Artificial,BULL05,Negative,,,Cow,Female,Gir,5/10/2018,5/10/2019,6/10/2019,Milk,450,Brown,Docile and healthy,,,,0,
+COW001,Gir,12/31/2023,1/2/2024,Natural,BULL02,Positive,10/11/2024 0:00,10/14/2024,Cow,Female,Gir,5/10/2018,5/10/2019,6/10/2019,Milk,450,Brown,Docile and healthy,,10/14/2024,8/15/2025,3957.23,8/15/2025
+COW001,Gir,12/30/2024,1/1/2025,Natural,BULL09,Pending,,,Cow,Female,Gir,5/10/2018,5/10/2019,6/10/2019,Milk,450,Brown,Docile and healthy,,,,0,
+COW001,Gir,12/30/2025,1/1/2026,Natural,BULL07,Negative,,,Cow,Female,Gir,5/10/2018,5/10/2019,6/10/2019,Milk,450,Brown,Docile and healthy,,,,0,
+COW002,Sahiwal,1/1/2020,1/3/2020,Artificial,BULL07,Pending,,,Cow,Female,Sahiwal,7/20/2019,7/20/2020,8/20/2020,Milk,470,Red,High yield,,,,0,
+COW002,Sahiwal,12/31/2020,1/2/2021,Artificial,BULL07,Pending,,,Cow,Female,Sahiwal,7/20/2019,7/20/2020,8/20/2020,Milk,470,Red,High yield,,,,0,
+COW002,Sahiwal,12/31/2021,1/2/2022,Artificial,BULL03,Pending,,,Cow,Female,Sahiwal,7/20/2019,7/20/2020,8/20/2020,Milk,470,Red,High yield,,,,0,
+COW002,Sahiwal,12/31/2022,1/2/2023,Artificial,BULL010,Positive,10/12/2023 0:00,10/15/2023,Cow,Female,Sahiwal,7/20/2019,7/20/2020,8/20/2020,Milk,470,Red,High yield,,10/15/2023,8/15/2024,6875.88,8/15/2024
+COW002,Sahiwal,12/31/2023,1/2/2024,Artificial,BULL07,Negative,,,Cow,Female,Sahiwal,7/20/2019,7/20/2020,8/20/2020,Milk,470,Red,High yield,,,,0,
+COW002,Sahiwal,12/30/2024,1/1/2025,Artificial,BULL010,Negative,,,Cow,Female,Sahiwal,7/20/2019,7/20/2020,8/20/2020,Milk,470,Red,High yield,,,,0,
+COW002,Sahiwal,12/30/2025,1/1/2026,Natural,BULL02,Pending,,,Cow,Female,Sahiwal,7/20/2019,7/20/2020,8/20/2020,Milk,470,Red,High yield,,,,0,
+COW003,Jersey,1/1/2020,1/3/2020,Natural,BULL09,Negative,,,Cow,Female,Jersey,11/1/2017,11/1/2018,12/1/2018,Milk,430,White,Needs extra care,,,,0,
+COW003,Jersey,12/31/2020,1/2/2021,Natural,BULL08,Positive,10/12/2021 0:00,10/15/2021,Cow,Female,Jersey,11/1/2017,11/1/2018,12/1/2018,Milk,430,White,Needs extra care,,10/15/2021,10/14/2023,1006.62,10/14/2023
+COW003,Jersey,12/31/2021,1/2/2022,Natural,BULL010,Negative,,,Cow,Female,Jersey,11/1/2017,11/1/2018,12/1/2018,Milk,430,White,Needs extra care,,,,0,
+COW003,Jersey,12/31/2022,1/2/2023,Natural,BULL02,Positive,10/12/2023 0:00,10/15/2023,Cow,Female,Jersey,11/1/2017,11/1/2018,12/1/2018,Milk,430,White,Needs extra care,,10/15/2023,10/13/2025,2821.84,10/13/2025
+COW003,Jersey,12/31/2023,1/2/2024,Artificial,BULL08,Pending,,,Cow,Female,Jersey,11/1/2017,11/1/2018,12/1/2018,Milk,430,White,Needs extra care,,,,0,
+COW003,Jersey,12/30/2024,1/1/2025,Artificial,BULL05,Positive,10/11/2025 0:00,10/14/2025,Cow,Female,Jersey,11/1/2017,11/1/2018,12/1/2018,Milk,430,White,Needs extra care,,10/14/2025,8/15/2026,6591.09,8/15/2026
+COW003,Jersey,12/30/2025,1/1/2026,Artificial,BULL01,Pending,,,Cow,Female,Jersey,11/1/2017,11/1/2018,12/1/2018,Milk,430,White,Needs extra care,,,,0,
+COW004,Holstein,1/1/2020,1/3/2020,Natural,BULL010,Positive,10/12/2020 0:00,10/15/2020,Cow,Female,Holstein,2/15/2020,2/15/2021,3/15/2021,Milk,490,Black & White,Strong and energetic,,10/15/2020,10/14/2021,4472.43,10/14/2021
+COW004,Holstein,12/31/2020,1/2/2021,Natural,BULL02,Positive,10/12/2021 0:00,10/15/2021,Cow,Female,Holstein,2/15/2020,2/15/2021,3/15/2021,Milk,490,Black & White,Strong and energetic,,10/15/2021,10/13/2024,5703.42,10/13/2024
+COW004,Holstein,12/31/2021,1/2/2022,Natural,BULL08,Negative,,,Cow,Female,Holstein,2/15/2020,2/15/2021,3/15/2021,Milk,490,Black & White,Strong and energetic,,,,0,
+COW004,Holstein,12/31/2022,1/2/2023,Artificial,BULL01,Negative,,,Cow,Female,Holstein,2/15/2020,2/15/2021,3/15/2021,Milk,490,Black & White,Strong and energetic,,,,0,
+COW004,Holstein,12/31/2023,1/2/2024,Artificial,BULL010,Positive,10/11/2024 0:00,10/14/2024,Cow,Female,Holstein,2/15/2020,2/15/2021,3/15/2021,Milk,490,Black & White,Strong and energetic,,10/14/2024,10/13/2025,2024.08,10/13/2025
+COW004,Holstein,12/30/2024,1/1/2025,Natural,BULL05,Positive,10/11/2025 0:00,10/14/2025,Cow,Female,Holstein,2/15/2020,2/15/2021,3/15/2021,Milk,490,Black & White,Strong and energetic,,10/14/2025,8/15/2026,5954.07,8/15/2026
+COW004,Holstein,12/30/2025,1/1/2026,Artificial,BULL011,Negative,,,Cow,Female,Holstein,2/15/2020,2/15/2021,3/15/2021,Milk,490,Black & White,Strong and energetic,,,,0,
+COW005,Red Sindhi,1/1/2020,1/3/2020,Artificial,BULL01,Pending,,,Cow,Female,Red Sindhi,9/12/2018,9/12/2019,10/12/2019,Milk,460,Reddish Brown,Good temperament,,,,0,
+COW005,Red Sindhi,12/31/2020,1/2/2021,Natural,BULL06,Positive,10/12/2021 0:00,10/15/2021,Cow,Female,Red Sindhi,9/12/2018,9/12/2019,10/12/2019,Milk,460,Reddish Brown,Good temperament,,10/15/2021,10/14/2022,3460.68,10/14/2022
+COW005,Red Sindhi,12/31/2021,1/2/2022,Natural,BULL06,Positive,10/12/2022 0:00,10/15/2022,Cow,Female,Red Sindhi,9/12/2018,9/12/2019,10/12/2019,Milk,460,Reddish Brown,Good temperament,,10/15/2022,10/13/2025,6648.39,10/13/2025
+COW005,Red Sindhi,12/31/2022,1/2/2023,Natural,BULL05,Pending,,,Cow,Female,Red Sindhi,9/12/2018,9/12/2019,10/12/2019,Milk,460,Reddish Brown,Good temperament,,,,0,
+COW005,Red Sindhi,12/31/2023,1/2/2024,Artificial,BULL02,Negative,,,Cow,Female,Red Sindhi,9/12/2018,9/12/2019,10/12/2019,Milk,460,Reddish Brown,Good temperament,,,,0,
+COW005,Red Sindhi,12/30/2024,1/1/2025,Natural,BULL07,Positive,10/11/2025 0:00,10/14/2025,Cow,Female,Red Sindhi,9/12/2018,9/12/2019,10/12/2019,Milk,460,Reddish Brown,Good temperament,,10/14/2025,8/15/2026,3174.2,8/15/2026
+COW005,Red Sindhi,12/30/2025,1/1/2026,Natural,BULL09,Pending,,,Cow,Female,Red Sindhi,9/12/2018,9/12/2019,10/12/2019,Milk,460,Reddish Brown,Good temperament,,,,0,
