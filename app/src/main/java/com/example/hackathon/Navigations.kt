@@ -15,6 +15,12 @@ fun MyAppNavigation(
     val navController = rememberNavController()
     val sessionState by sessionViewModel.sessionState.collectAsState()
 
+    val startDestination = when {
+        !sessionState.isAuthenticated -> RouteLoginScreen::class.qualifiedName!!
+        sessionState.isVet == true -> RouteVetProfile::class.qualifiedName!!
+        else -> RouteHomepage::class.qualifiedName!!
+    }
+
     // Redirect to login if not authenticated
     LaunchedEffect(sessionState.isAuthenticated) {
         if (!sessionState.isAuthenticated) {
@@ -25,7 +31,7 @@ fun MyAppNavigation(
         }
     }
 
-    NavHost(navController = navController, startDestination = if (sessionState.isAuthenticated) RouteHomepage::class.qualifiedName!! else RouteLoginScreen::class.qualifiedName!!) {
+    NavHost(navController = navController, startDestination = startDestination) {
         composable<RouteHomepage> {
             Homepage(
                 navController = navController,
