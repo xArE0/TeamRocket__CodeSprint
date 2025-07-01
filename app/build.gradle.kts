@@ -88,4 +88,8 @@ dependencies {
 
     //Icons
     implementation(libs.androidx.material.icons.extended)
+
+    //TenserFlow Dependencies
+    implementation(libs.tensorflow.lite)
+    implementation(libs.tensorflow.lite.support)
 }
