@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 
+
 // --- Data class for heat detection info ---
 data class HeatDetectionInfo(
     val heatStartTime: String,
@@ -237,6 +238,8 @@ fun HerdPage(
     var isLoading by remember { mutableStateOf(true) }
     val tabTitles = listOf("Herd", "Insemination", "Dairy")
     var selectedTabIndex by remember { mutableIntStateOf(0) }
+    var selectedCattleTagNo by remember { mutableStateOf<String?>(null) }
+    var selectedCattleTagNoForDelivery by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(userId) {
         if (!userId.isNullOrEmpty()) {
@@ -401,24 +404,152 @@ fun HerdPage(
                                 .padding(horizontal = 20.dp),
                             verticalArrangement = Arrangement.spacedBy(14.dp)
                         ) {
+                            // Inside the LazyColumn for tab 1
                             items(cattleList) { cattle ->
-                                InseminationCard(
-                                    cattle = cattle,
-                                    heatInfo = HeatDetectionInfo(
-                                        heatStartTime = "2023-10-01 08:00",
-                                        status = "Optimal",
-                                        aiRemainingHours = 26
-                                    ),
-                                    onClick = {
-                                        navController.navigate(RouteDetailsPage(tag = cattle.tagNo))
+                                Column {
+                                    InseminationCard(
+                                        cattle = cattle,
+                                        heatInfo = HeatDetectionInfo(
+                                            heatStartTime = "2023-10-01 08:00",
+                                            status = "Optimal",
+                                            aiRemainingHours = 26
+                                        ),
+                                        onClick = { selectedCattleTagNo = cattle.tagNo }
+                                    )
+                                    if (selectedCattleTagNo == cattle.tagNo) {
+                                        HeatInfoFormInline(
+                                            cattleTagNo = cattle.tagNo,
+                                            onSubmit = { heatInfo ->
+                                                // Save heatInfo to Firestore here
+                                                selectedCattleTagNo = null // Close form after submit
+                                            },
+                                            onCancel = { selectedCattleTagNo = null }
+                                        )
                                     }
-                                )
+                                }
                             }
                         }
                     }
                 }
-                2 -> ComingSoonCard("Dairy records coming soon.", Color(0xFF2196F3))
+                2 -> {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 20.dp),
+                        verticalArrangement = Arrangement.spacedBy(14.dp)
+                    ) {
+                        items(cattleList) { cattle ->
+                            Column {
+                                CattleCard(
+                                    cattle = cattle,
+                                    onClick = { selectedCattleTagNoForDelivery = cattle.tagNo }
+                                )
+                                if (selectedCattleTagNoForDelivery == cattle.tagNo) {
+//                                    DeliveryInfoFormInline(
+//                                        cattleTagNo = cattle.tagNo,
+//                                        onSubmit = { deliveryInfo ->
+//                                            // Save deliveryInfo to Firestore here
+//                                            selectedCattleTagNoForDelivery = null
+//                                        },
+//                                        onCancel = { selectedCattleTagNoForDelivery = null }
+//                                    )
+                                }
+                            }
+                        }
+                    }
+                }            }
+        }
+    }
+}
+
+@Composable
+fun HeatInfoFormInline(
+    cattleTagNo: String,
+    onSubmit: (HeatInfo) -> Unit,
+    onCancel: () -> Unit
+) {
+    var lastHeatStart by remember { mutableStateOf("") }
+    var nextExpectedHeat by remember { mutableStateOf("") }
+    var lastInseminationDate by remember { mutableStateOf("") }
+    var pregnancyStatus by remember { mutableStateOf("") }
+    var heatCycleStage by remember { mutableStateOf("") }
+    var optimalBreedingWindow by remember { mutableStateOf("") }
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(4.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text("Enter Heat Info for Tag: $cattleTagNo")
+            OutlinedTextField(value = lastHeatStart, onValueChange = { lastHeatStart = it }, label = { Text("Last Heat Start") })
+            OutlinedTextField(value = nextExpectedHeat, onValueChange = { nextExpectedHeat = it }, label = { Text("Next Expected Heat") })
+            OutlinedTextField(value = lastInseminationDate, onValueChange = { lastInseminationDate = it }, label = { Text("Last Insemination Date") })
+            OutlinedTextField(value = pregnancyStatus, onValueChange = { pregnancyStatus = it }, label = { Text("Pregnancy Status") })
+            OutlinedTextField(value = heatCycleStage, onValueChange = { heatCycleStage = it }, label = { Text("Heat Cycle Stage") })
+            OutlinedTextField(value = optimalBreedingWindow, onValueChange = { optimalBreedingWindow = it }, label = { Text("Optimal Breeding Window") })
+            Row {
+                Button(onClick = {
+                    onSubmit(
+                        HeatInfo(
+                            cattleTagNo = cattleTagNo,
+                            lastHeatStart = lastHeatStart,
+                            nextExpectedHeat = nextExpectedHeat,
+                            lastInseminationDate = lastInseminationDate,
+                            pregnancyStatus = pregnancyStatus,
+                            heatCycleStage = heatCycleStage,
+                            optimalBreedingWindow = optimalBreedingWindow
+                        )
+                    )
+                }) { Text("Save") }
+                Spacer(modifier = Modifier.width(8.dp))
+                Button(onClick = onCancel) { Text("Cancel") }
             }
         }
     }
 }
+
+//@Composable
+//fun DeliveryInfoFormInline(
+//    cattleTagNo: String,
+//    onSubmit: (DeliveryInfo) -> Unit,
+//    onCancel: () -> Unit
+//) {
+//    var deliveryDate by remember { mutableStateOf("") }
+//    var calfGender by remember { mutableStateOf("") }
+//    var complications by remember { mutableStateOf("") }
+//    var notes by remember { mutableStateOf("") }
+//
+//    Card(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .padding(vertical = 8.dp),
+//        shape = RoundedCornerShape(12.dp),
+//        elevation = CardDefaults.cardElevation(4.dp)
+//    ) {
+//        Column(modifier = Modifier.padding(16.dp)) {
+//            Text("Enter Delivery Info for Tag: $cattleTagNo")
+//            OutlinedTextField(value = deliveryDate, onValueChange = { deliveryDate = it }, label = { Text("Delivery Date") })
+//            OutlinedTextField(value = calfGender, onValueChange = { calfGender = it }, label = { Text("Calf Gender") })
+//            OutlinedTextField(value = complications, onValueChange = { complications = it }, label = { Text("Complications") })
+//            OutlinedTextField(value = notes, onValueChange = { notes = it }, label = { Text("Notes") })
+//            Row {
+//                Button(onClick = {
+//                    onSubmit(
+//                        DeliveryInfo(
+//                            cattleTagNo = cattleTagNo,
+//                            deliveryDate = deliveryDate,
+//                            calfGender = calfGender,
+//                            complications = complications,
+//                            notes = notes
+//                        )
+//                    )
+//                }) { Text("Save") }
+//                Spacer(modifier = Modifier.width(8.dp))
+//                Button(onClick = onCancel) { Text("Cancel") }
+//            }
+//        }
+//    }
+//}

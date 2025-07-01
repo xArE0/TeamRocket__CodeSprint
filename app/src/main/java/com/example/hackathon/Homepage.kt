@@ -333,7 +333,7 @@ fun FarmBottomNavigationBar(navController: NavController, currentRoute: String?)
     val navItems = listOf(
         Triple(Icons.Filled.Home, "Home", RouteHomepage::class.qualifiedName!!),
         Triple(Icons.Filled.Pets, "Herd", RouteHerdPage::class.qualifiedName!!),
-        Triple(Icons.AutoMirrored.Filled.Assignment, "Tasks", RouteTasksPage::class.qualifiedName!!),
+        Triple(Icons.AutoMirrored.Filled.Assignment, "Medical", RouteTasksPage::class.qualifiedName!!),
         Triple(Icons.Outlined.Person, "Profile", RouteProfilePage::class.qualifiedName!!)
     )
 
