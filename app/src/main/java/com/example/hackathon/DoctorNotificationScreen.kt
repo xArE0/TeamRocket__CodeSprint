@@ -7,26 +7,21 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
-import androidx.compose.ui.text.font.FontWeight
-
 
 @Composable
-fun DoctorNotificationScreen(
-    navController: NavController,
-    onNotificationClick: (CattleNotificationDetailed) -> Unit
-) {
+fun DoctorNotificationScreen() {
     Scaffold(
         containerColor = Color(0xFFF9FBE7),
-        bottomBar = { DoctorBottomNavigationBar() }
+        bottomBar = { /* You can add a static bottom bar if needed */ }
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -42,46 +37,19 @@ fun DoctorNotificationScreen(
                 modifier = Modifier.padding(bottom = 12.dp)
             )
 
-            NotificationList(
-                notifications = sampleNotifications,
-                onNotificationClick = onNotificationClick
-            )
-        }
-    }
-}
-
-@Composable
-fun NotificationList(
-    notifications: List<CattleNotification>,
-    onNotificationClick: (CattleNotificationDetailed) -> Unit
-) {
-    LazyColumn(
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        items(notifications) { notification ->
-            NotificationCard(notification = notification) {
-                // Convert simple notification to detailed one
-                val detailed = CattleNotificationDetailed(
-                    cattleName = notification.cattleName,
-                    ownerName = notification.ownerName,
-                    contact = "N/A", // Update this if you have real data
-                    location = "Unknown", // Update accordingly
-                    symptoms = notification.symptoms,
-                    remarks = notification.description,
-                    status = notification.status,
-                    weeklyData = emptyList() // You can pass real data if needed
-                )
-                onNotificationClick(detailed)
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(staticNotifications) { notification ->
+                    NotificationCardStatic(notification)
+                }
             }
         }
     }
 }
 
 @Composable
-fun NotificationCard(
-    notification: CattleNotification,
-    onClick: () -> Unit
-) {
+fun NotificationCardStatic(notification: CattleNotification) {
     val statusColor = when (notification.status) {
         "Urgent" -> Color(0xFFD32F2F)
         "Pending" -> Color(0xFFFFA000)
@@ -91,8 +59,7 @@ fun NotificationCard(
 
     Card(
         modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() },
+            .fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(4.dp)
@@ -128,7 +95,6 @@ fun NotificationCard(
     }
 }
 
-// Simplified Notification Data Class
 data class CattleNotification(
     val cattleName: String,
     val ownerName: String,
@@ -137,8 +103,7 @@ data class CattleNotification(
     val status: String
 )
 
-// Sample Notifications
-val sampleNotifications = listOf(
+val staticNotifications = listOf(
     CattleNotification(
         cattleName = "Cow #123",
         ownerName = "Ramesh Thapa",

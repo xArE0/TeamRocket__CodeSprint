@@ -96,6 +96,9 @@ fun MyAppNavigation(
                 sessionViewModel = sessionViewModel
             )
         }
+        composable<RouteVetNot> {
+            DoctorNotificationScreen()
+        }
     }
 }
 /*-------------------------------------------Serializable Routes Objects--------------------------------------------------*/
@@ -129,3 +132,6 @@ object RouteVetSignup
 
 @Serializable
 object RouteVetProfile
+
+@Serializable
+object RouteVetNot

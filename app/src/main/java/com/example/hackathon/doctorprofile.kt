@@ -76,7 +76,7 @@ fun DoctorProfileScreen(
                 )
             }
         },
-        bottomBar = { DoctorBottomNavigationBar() }
+        bottomBar = { DoctorBottomNavigationBar(navController) }
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -172,7 +172,7 @@ fun DoctorInfoCardItem(info: DoctorInfoCard) {
 }
 
 @Composable
-fun DoctorBottomNavigationBar() {
+fun DoctorBottomNavigationBar(navController: NavController) {
     val selectedColor = Color(0xFF2E7D32)
     val unselectedColor = Color(0xFF9E9E9E)
 
