@@ -29,6 +29,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.google.firebase.Firebase
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -150,26 +151,23 @@ class FirebaseDataClass {
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
-        val firestore = com.google.firebase.firestore.FirebaseFirestore.getInstance()
-        val data = mapOf(
-            "lastHeatStart" to lastHeatStart,
-            "nextExpectedHeat" to nextExpectedHeat,
-            "lastInseminationDate" to lastInseminationDate,
-            "pregnancyStatus" to pregnancyStatus,
-            "heatCycleStage" to heatCycleStage,
-            "optimalBreedingWindow" to optimalBreedingWindow,
-            "timestamp" to com.google.firebase.Timestamp.now()
-        )
-        firestore.collection("users")
-            .document(userId)
-            .collection("cattle")
-            .document(cattleId)
-            .collection("actions")
-            .add(data)
-            .addOnSuccessListener { onSuccess() }
-            .addOnFailureListener { onError(it.message ?: "Unknown error") }
-    }
+        val db = firestore
+        val cattleDocRef = db.collection("users").document(userId)
+            .collection("cattle").document(cattleId)
 
+        val updates = mapOf(
+            "lastHeatDate" to lastHeatStart,
+            "expectedHeatDate" to nextExpectedHeat,
+            "inseminationDate" to lastInseminationDate,
+            "pregnancy" to pregnancyStatus,
+            "heatCycleStage" to heatCycleStage,
+            "optimalBreedingWindow" to optimalBreedingWindow
+        )
+
+        cattleDocRef.update(updates)
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { e -> onError(e.localizedMessage ?: "Unknown error") }
+    }
 
     // Function to fetch cattle list
     suspend fun fetchCattleList(userId: String): List<Cattle> {
