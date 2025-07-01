@@ -26,7 +26,8 @@ data class SessionState(
     val error: String? = null,
     val isAuthenticated: Boolean = false,
     val userId: String? = null,
-    val userToken: String? = null
+    val userToken: String? = null,
+    val isVet: Boolean = false // Add this
 )
 
 // Session Manager object
@@ -96,7 +97,7 @@ class SessionViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
-    suspend fun login(token: String, userId: String) {
+    suspend fun login(token: String, userId: String, isVet: Boolean) {
         try {
             _sessionState.update { it.copy(isLoading = true) }
             SessionManager.saveUserData(getApplication(), userId, token)
@@ -105,7 +106,8 @@ class SessionViewModel(application: Application) : AndroidViewModel(application)
                     isLoading = false,
                     isAuthenticated = true,
                     userId = userId,
-                    userToken = token
+                    userToken = token,
+                    isVet = isVet
                 )
             }
         } catch (e: Exception) {

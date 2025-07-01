@@ -36,7 +36,8 @@ fun MyAppNavigation(
         composable<RouteLoginScreen> {
             LoginScreen(
                 navController = navController,
-                sessionViewModel = sessionViewModel
+                sessionViewModel = sessionViewModel,
+                sessionState = sessionState
             )
         }
         composable<RouteSignupScreen> {
@@ -62,7 +63,8 @@ fun MyAppNavigation(
         composable<RouteProfilePage> {
             LoginScreen(
                 navController = navController,
-                sessionViewModel = sessionViewModel
+                sessionViewModel = sessionViewModel,
+                sessionState = sessionState
             )
         }
         composable<AddCattleScreen> {
@@ -81,6 +83,12 @@ fun MyAppNavigation(
         composable<RouteVetSignup> {
             VetSignupScreen(
                 navController = navController
+            )
+        }
+        composable<RouteVetProfile> {
+            DoctorProfileScreen(
+                navController = navController,
+                sessionViewModel = sessionViewModel
             )
         }
     }
@@ -113,3 +121,6 @@ data class RouteDetailsPage(
 )
 @Serializable
 object RouteVetSignup
+
+@Serializable
+object RouteVetProfile

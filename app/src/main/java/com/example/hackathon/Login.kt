@@ -1,5 +1,6 @@
 package com.example.hackathon
 
+import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -23,6 +24,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -36,13 +38,15 @@ import coil.request.ImageRequest
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
 @Composable
 fun LoginScreen(
     navController: NavController,
-    sessionViewModel: SessionViewModel = LocalSessionManager.current
+    sessionViewModel: SessionViewModel = LocalSessionManager.current,
+    sessionState: SessionState
 ) {
     var phoneOrEmail by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -60,8 +64,14 @@ fun LoginScreen(
     // Effect to handle session state changes
     LaunchedEffect(sessionState) {
         if (sessionState.isAuthenticated) {
-            navController.navigate(RouteHomepage::class.qualifiedName ?: "") {
-                popUpTo(navController.graph.startDestinationRoute ?: "") { inclusive = true }
+            if (sessionState.isVet) {
+                navController.navigate(RouteVetProfile) {
+                    popUpTo(navController.graph.startDestinationRoute ?: "") { inclusive = true }
+                }
+            } else {
+                navController.navigate(RouteHomepage) {
+                    popUpTo(navController.graph.startDestinationRoute ?: "") { inclusive = true }
+                }
             }
         }
         sessionState.error?.let { error ->
@@ -164,7 +174,7 @@ fun LoginScreen(
                     Text(
                         text = "Your Farming Companion",
                         fontSize = 16.sp,
-                        fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
+                        fontStyle = FontStyle.Italic,
                         color = primaryBrown,
                         textAlign = TextAlign.Center
                     )
@@ -247,52 +257,52 @@ fun LoginScreen(
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // Login button
-                    Button(
-                        onClick = {
-                            scope.launch {
-                                isLoading = true
-                                errorMessage = ""
-                                performLogin(
-                                    auth = auth,
-                                    email = phoneOrEmail,
-                                    password = password,
-                                    context = context,
-                                    sessionViewModel = sessionViewModel,
-                                    navController = navController
-                                ) { error ->
-                                    errorMessage = error
-                                    isLoading = false
-                                    if (error.isNotEmpty()) {
-                                        scope.launch {
-                                            snackbarHostState.showSnackbar(error)
-                                        }
-                                    }
-                                }
-                            }
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(50.dp),
-                        enabled = !isLoading && phoneOrEmail.isNotEmpty() && password.isNotEmpty(),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = primaryGreen,
-                            disabledContainerColor = primaryGreen.copy(alpha = 0.6f)
-                        ),
-                        shape = RoundedCornerShape(8.dp)
+                    // Inside your LoginScreen composable, in the login button's onClick:
+                  Button(
+                      onClick = {
+                          errorMessage = ""
+                          isLoading = true
+                          scope.launch {
+                              try {
+                                  val result = auth.signInWithEmailAndPassword(phoneOrEmail, password).await()
+                                  val userId = result.user?.uid ?: throw Exception("User not found")
+                                  val token = result.user?.getIdToken(false)?.await()?.token ?: throw Exception("Failed to get token")
+                                  val firestore = FirebaseFirestore.getInstance()
+                                  val vetDoc = firestore.collection("vets").document(userId).get().await()
+                                  isLoading = false
+                                  if (vetDoc.exists()) {
+                                      // Vet login
+                                      sessionViewModel.login(token, userId, true)
+                                      navController.navigate(RouteVetProfile) {
+                                          popUpTo(navController.graph.startDestinationRoute ?: "") { inclusive = true }
+                                      }
+                                  } else {
+                                      // Normal user login
+                                      sessionViewModel.login(token, userId, false)
+                                      navController.navigate(RouteHomepage) {
+                                          popUpTo(navController.graph.startDestinationRoute ?: "") { inclusive = true }
+                                      }
+                                  }
+                              } catch (e: Exception) {
+                                  isLoading = false
+                                  errorMessage = e.message ?: "Login failed"
+                              }
+                          }
+                      },
+                      modifier = Modifier
+                          .fillMaxWidth()
+                          .height(48.dp)
+                            .padding(top = 10.dp),
+                        shape = RoundedCornerShape(10.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF5C8D23))
                     ) {
                         if (isLoading) {
                             CircularProgressIndicator(
-                                modifier = Modifier.size(24.dp),
                                 color = Color.White,
-                                strokeWidth = 2.dp
+                                modifier = Modifier.size(24.dp)
                             )
                         } else {
-                            Text(
-                                text = "Login",
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold
-                            )
+                            Text(text = "LOGIN", color = Color.White)
                         }
                     }
 
@@ -340,7 +350,7 @@ private suspend fun performLogin(
     auth: FirebaseAuth,
     email: String,
     password: String,
-    context: android.content.Context,
+    context: Context,
     sessionViewModel: SessionViewModel,
     navController: NavController,
     onError: (String) -> Unit
@@ -361,7 +371,13 @@ private suspend fun performLogin(
         val result = auth.signInWithEmailAndPassword(trimmedEmail, trimmedPassword).await()
         result.user?.let { user ->
             val token = user.getIdToken(false).await().token ?: throw Exception("Failed to get token")
-            sessionViewModel.login(token, user.uid)
+            sessionViewModel.login(
+                token, user.uid,
+                isVet = FirebaseFirestore.getInstance()
+                    .collection("vets")
+                    .document(user.uid)
+                    .get().await().exists()
+            )
         } ?: throw Exception("Login failed: Unknown error")
     } catch (e: Exception) {
         val errorMessage = when (e) {

@@ -31,6 +31,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import kotlinx.coroutines.launch
 
 /*-------------------------------------------Main UI Function--------------------------------------------------*/
 @Composable
@@ -89,6 +90,25 @@ fun Homepage(
             QuickStatsSection()
             FarmActionsSection()
             RecentActivitySection()
+            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(24.dp))
+            Button(
+                onClick = {
+                    scope.launch {
+                        sessionViewModel.logout()
+                        navController.navigate(RouteLoginScreen) {
+                            popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                            launchSingleTop = true
+                        }
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 32.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F))
+            ) {
+                Text("Logout", color = Color.White, fontWeight = FontWeight.Bold)
+            }
         }
     }
 }
