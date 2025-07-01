@@ -267,7 +267,7 @@ fun SplashScreen() {
             Spacer(modifier = Modifier.height(30.dp))
 
             Text(
-                text = "Whatever",
+                text = "PashuSewa",
                 style = TextStyle(
                     brush = Brush.linearGradient(
                         colors = listOf(
