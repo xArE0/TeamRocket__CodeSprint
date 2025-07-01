@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -30,6 +31,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -278,9 +280,14 @@ fun SignupScreen(
                         trailingIcon = {
                             Text(
                                 text = if (passwordVisible) "HIDE" else "SHOW",
-                                modifier = Modifier.clickable { passwordVisible = !passwordVisible },
+                                modifier = Modifier.clickable {
+                                    passwordVisible = !passwordVisible
+                                },
                                 color = Color(0xFF009688),
-                                style = androidx.compose.ui.text.TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                style = androidx.compose.ui.text.TextStyle(
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
                             )
                         },
                         modifier = Modifier
@@ -304,9 +311,14 @@ fun SignupScreen(
                         trailingIcon = {
                             Text(
                                 text = if (passwordVisible) "HIDE" else "SHOW",
-                                modifier = Modifier.clickable { passwordVisible = !passwordVisible },
+                                modifier = Modifier.clickable {
+                                    passwordVisible = !passwordVisible
+                                },
                                 color = Color(0xFF009688),
-                                style = androidx.compose.ui.text.TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                style = androidx.compose.ui.text.TextStyle(
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
                             )
                         },
                         modifier = Modifier
@@ -322,7 +334,10 @@ fun SignupScreen(
 
                     Text(
                         text = "Use 6 or more characters with letters, numbers & symbols.",
-                        style = androidx.compose.ui.text.TextStyle(fontSize = 12.sp, color = Color.Gray),
+                        style = androidx.compose.ui.text.TextStyle(
+                            fontSize = 12.sp,
+                            color = Color.Gray
+                        ),
                         textAlign = TextAlign.Start,
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -368,7 +383,8 @@ fun SignupScreen(
                                                     navController.navigate(RouteHomepage)
                                                 }
                                                 .addOnFailureListener { e ->
-                                                    errorMessage = "Failed to store user data: ${e.message}"
+                                                    errorMessage =
+                                                        "Failed to store user data: ${e.message}"
                                                     isLoading = false
                                                 }
                                         } else {
@@ -388,21 +404,53 @@ fun SignupScreen(
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF5C8D23))
                     ) {
                         if (isLoading) {
-                            CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                            CircularProgressIndicator(
+                                color = Color.White,
+                                modifier = Modifier.size(24.dp)
+                            )
                         } else {
                             Text(text = "CREATE ACCOUNT", color = Color.White)
                         }
                     }
 
+                    Spacer(modifier = Modifier.height(12.dp))
+                    // "Register as Vet" link
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = "Are you a vet? ",
+                            color = Color.Gray,
+                            fontSize = 14.sp
+                        )
+                        TextButton(
+                            onClick = {
+                                navController.navigate(RouteVetSignup) {
+                                    popUpTo(RouteSignupScreen) { inclusive = true }
+                                }
+                            }
+                        ) {
+                            Text(
+                                text = "Register as Vet",
+                                color = Color(0xFF5C8D23),
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 14.sp
+                            )
+                        }
+                    }
+
                     Spacer(modifier = Modifier.height(16.dp))
+
                     Text(
                         text = "By creating account you agree with our",
-                        style = androidx.compose.ui.text.TextStyle(fontSize = 12.sp, color = Color.Gray)
+                        fontSize = 12.sp,
+                        color = Color.Gray
                     )
                     Text(
                         text = "Terms & Conditions",
                         color = Color(0xFF009688),
-                        style = androidx.compose.ui.text.TextStyle(fontSize = 12.sp),
+                        fontSize = 12.sp,
                         modifier = Modifier.clickable { /* Navigate to Terms & Conditions */ }
                     )
                 }

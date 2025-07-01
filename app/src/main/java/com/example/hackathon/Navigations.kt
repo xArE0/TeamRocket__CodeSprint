@@ -78,6 +78,11 @@ fun MyAppNavigation(
                 tagNo = parameters.tag
             )
         }
+        composable<RouteVetSignup> {
+            VetSignupScreen(
+                navController = navController
+            )
+        }
     }
 }
 /*-------------------------------------------Serializable Routes Objects--------------------------------------------------*/
@@ -106,3 +111,5 @@ object AddCattleScreen
 data class RouteDetailsPage(
     val tag: String
 )
+@Serializable
+object RouteVetSignup
