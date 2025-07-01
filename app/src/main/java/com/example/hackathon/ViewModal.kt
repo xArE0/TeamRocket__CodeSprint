@@ -1,5 +1,6 @@
 package com.example.hackathon
 
+import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -28,21 +29,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import kotlinx.coroutines.delay
 import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.tasks.await
-import android.content.Context
-import android.net.Uri
-import android.util.Base64
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import okhttp3.FormBody
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.RequestBody
-import org.json.JSONObject
 import java.io.InputStream
 
 // User data class
@@ -66,17 +60,22 @@ data class Cattle(
     val weight: String = "",
     val color: String = "",
     val notes: String = "",
-    val imageUrl: String? = null
-)
+    val imageUrl: String? = null,
 
-data class HeatInfo(
-    val cattleTagNo: String,  // Reference to Cattle.tagNo
-    val lastHeatStart: String = "", // Format: "HH:MM AM/PM, DD-MM-YY"
-    val nextExpectedHeat: String = "",
-    val lastInseminationDate: String = "",
-    val pregnancyStatus: String = "", // "Not Pregnant", "Pending", "Confirmed"
-    val heatCycleStage: String = "", // "Proestrus", "Estrus", "Metestrus", "Diestrus"
-    val optimalBreedingWindow: String = "" // "12-18 hours afteronset"
+    // New fields from Firebase
+    val aiType: String? = null,
+    val breedCsv: String? = null,
+    val bullInfo: String? = null,
+    val calculatedEndDate: String? = null,
+    val calvingDate: String? = null,
+    val cowId: String? = null,
+    val endDate: String? = null,
+    val expectedCalvingDate: String? = null,
+    val inseminationDate: String? = null,
+    val lastHeatDate: String? = null,
+    val pregnancy: String? = null,
+    val startDate: String? = null,
+    val totalMilkProduced: String? = null
 )
 
 /*-------------------------------------------Main Class to Fetch Data from Firebase-----------------------------------*/
@@ -105,6 +104,7 @@ class FirebaseDataClass {
         firestore.collection("users")
             .document(userId)
             .collection("cattle")
+            // In FirebaseDataClass.kt, in addCattle()
             .add(
                 mapOf(
                     "tagNo" to cattle.tagNo,
@@ -118,7 +118,21 @@ class FirebaseDataClass {
                     "weight" to cattle.weight,
                     "color" to cattle.color,
                     "notes" to cattle.notes,
-                    "imageUrl" to cattle.imageUrl
+                    "imageUrl" to cattle.imageUrl,
+                    // New fields
+                    "aiType" to cattle.aiType,
+                    "breedCsv" to cattle.breedCsv,
+                    "bullInfo" to cattle.bullInfo,
+                    "calculatedEndDate" to cattle.calculatedEndDate,
+                    "calvingDate" to cattle.calvingDate,
+                    "cowId" to cattle.cowId,
+                    "endDate" to cattle.endDate,
+                    "expectedCalvingDate" to cattle.expectedCalvingDate,
+                    "inseminationDate" to cattle.inseminationDate,
+                    "lastHeatDate" to cattle.lastHeatDate,
+                    "pregnancy" to cattle.pregnancy,
+                    "startDate" to cattle.startDate,
+                    "totalMilkProduced" to cattle.totalMilkProduced
                 )
             )
             .await()
