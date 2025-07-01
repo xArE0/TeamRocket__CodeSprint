@@ -100,13 +100,27 @@ class FirebaseDataClass {
             null
         }
     }
-
-    // Function to add cattle data
+    // In ViewModal.kt, inside FirebaseDataClass
     suspend fun addCattle(userId: String, cattle: Cattle) {
         firestore.collection("users")
             .document(userId)
             .collection("cattle")
-            .add(cattle)
+            .add(
+                mapOf(
+                    "tagNo" to cattle.tagNo,
+                    "type" to cattle.type,
+                    "gender" to cattle.gender,
+                    "breed" to cattle.breed,
+                    "dob" to cattle.dob,
+                    "tbDate" to cattle.tbDate,
+                    "brDate" to cattle.brDate,
+                    "purpose" to cattle.purpose,
+                    "weight" to cattle.weight,
+                    "color" to cattle.color,
+                    "notes" to cattle.notes,
+                    "imageUrl" to cattle.imageUrl
+                )
+            )
             .await()
     }
 
