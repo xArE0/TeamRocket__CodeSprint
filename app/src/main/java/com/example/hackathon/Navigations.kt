@@ -60,7 +60,7 @@ fun MyAppNavigation(
             )
         }
         composable<RouteProfilePage> {
-            SignupScreen(
+            LoginScreen(
                 navController = navController,
                 sessionViewModel = sessionViewModel
             )

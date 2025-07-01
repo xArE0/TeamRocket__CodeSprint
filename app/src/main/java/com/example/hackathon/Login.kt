@@ -1,19 +1,38 @@
 package com.example.hackathon
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.Phone
+import androidx.compose.material.icons.outlined.Visibility
+import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.rememberAsyncImagePainter
+import coil.request.ImageRequest
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
@@ -25,12 +44,14 @@ fun LoginScreen(
     navController: NavController,
     sessionViewModel: SessionViewModel = LocalSessionManager.current
 ) {
-    var email by remember { mutableStateOf("") }
+    var phoneOrEmail by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var errorMessage by remember { mutableStateOf("") }
+    var passwordVisible by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf("") }
     val auth = FirebaseAuth.getInstance()
     val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
 
     // Collect session state
@@ -43,133 +64,275 @@ fun LoginScreen(
                 popUpTo(navController.graph.startDestinationRoute ?: "") { inclusive = true }
             }
         }
-
         sessionState.error?.let { error ->
             errorMessage = error
             sessionViewModel.clearError()
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        // Welcome Text
-        Text(
-            text = "Welcome",
-            color = Color(0xFF4CAF50),
-            fontSize = 40.sp
+    // Colors
+    val primaryGreen = Color(0xFF5C8D23)
+    val primaryBrown = Color(0xFF6B4226)
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        // Background image
+        Image(
+            painter = rememberAsyncImagePainter(
+                ImageRequest.Builder(LocalContext.current)
+                    .data("https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MXx8ZmFybXxlbnwwfHwwfHw%3D&w=1000&q=80")
+                    .build()
+            ),
+            contentDescription = "Background Image",
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
-        Text("Sign in to manage properties", color = Color.Gray)
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Email / Mobile Number Field
-        TextField(
-            value = email,
-            onValueChange = { email = it },
-            placeholder = { Text("Mobile Number / Email") },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Email),
-            enabled = !isLoading
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Password Field
-        TextField(
-            value = password,
-            onValueChange = { password = it },
-            placeholder = { Text("Password") },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Password),
-            visualTransformation = PasswordVisualTransformation(),
-            enabled = !isLoading
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Forgot Password
-        Text(
-            "FORGOT PASSWORD",
-            color = Color(0xFF4CAF50),
+        // Overlay for better text visibility
+        Box(
             modifier = Modifier
-                .align(Alignment.End)
-                .clickable(enabled = !isLoading) {
-                    // Handle forgot password
-                }
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.3f))
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        // Snackbar host for notifications
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.TopCenter)
+        )
 
-        Button(
-            onClick = {
-                scope.launch {
-                    isLoading = true
-                    errorMessage = ""
-                    performLogin(
-                        auth = auth,
-                        email = email,
-                        password = password,
-                        context = context,
-                        sessionViewModel = sessionViewModel,
-                        navController = navController
-                    ) { error ->
-                        errorMessage = error
-                        isLoading = false
+        // Main content
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(20.dp)
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            // Card with login form
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth(0.85f)
+                    .wrapContentHeight(),
+                shape = RoundedCornerShape(15.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color.White.copy(alpha = 0.9f)
+                ),
+                elevation = CardDefaults.cardElevation(
+                    defaultElevation = 5.dp
+                )
+            ) {
+                Column(
+                    modifier = Modifier
+                        .padding(24.dp)
+                        .fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    // Logo
+                    Box(
+                        modifier = Modifier
+                            .size(80.dp)
+                            .clip(CircleShape)
+                            .background(Color.White)
+                            .padding(2.dp)
+                            .border(2.dp, primaryGreen, CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Image(
+                            painter = rememberAsyncImagePainter(
+                                ImageRequest.Builder(LocalContext.current)
+                                    .data("https://images.unsplash.com/photo-1533167649158-6d508895b680?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8Mnx8Y293fGVufDB8fDB8fA%3D%3D&w=1000&q=80")
+                                    .build()
+                            ),
+                            contentDescription = "App Logo",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(15.dp))
+
+                    // App name and subtitle
+                    Text(
+                        text = "PashuSewa",
+                        fontSize = 32.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = primaryGreen,
+                        textAlign = TextAlign.Center
+                    )
+
+                    Text(
+                        text = "Your Farming Companion",
+                        fontSize = 16.sp,
+                        fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
+                        color = primaryBrown,
+                        textAlign = TextAlign.Center
+                    )
+
+                    Spacer(modifier = Modifier.height(25.dp))
+
+                    // Phone or Email input
+                    OutlinedTextField(
+                        value = phoneOrEmail,
+                        onValueChange = { phoneOrEmail = it },
+                        label = { Text("Mobile Number / Email") },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Outlined.Phone,
+                                contentDescription = "Phone Icon",
+                                tint = primaryBrown
+                            )
+                        },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = primaryBrown,
+                            unfocusedBorderColor = primaryBrown.copy(alpha = 0.7f),
+                            focusedLabelColor = primaryBrown,
+                            unfocusedLabelColor = primaryBrown.copy(alpha = 0.7f)
+                        )
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Password input
+                    OutlinedTextField(
+                        value = password,
+                        onValueChange = { password = it },
+                        label = { Text("Password") },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Outlined.Lock,
+                                contentDescription = "Lock Icon",
+                                tint = primaryBrown
+                            )
+                        },
+                        trailingIcon = {
+                            IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                                Icon(
+                                    imageVector = if (passwordVisible) Icons.Outlined.Visibility else Icons.Outlined.VisibilityOff,
+                                    contentDescription = "Toggle Password Visibility",
+                                    tint = primaryBrown
+                                )
+                            }
+                        },
+                        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = primaryBrown,
+                            unfocusedBorderColor = primaryBrown.copy(alpha = 0.7f),
+                            focusedLabelColor = primaryBrown,
+                            unfocusedLabelColor = primaryBrown.copy(alpha = 0.7f)
+                        )
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // Forgot Password
+                    Text(
+                        "FORGOT PASSWORD",
+                        color = primaryGreen,
+                        modifier = Modifier
+                            .align(Alignment.End)
+                            .clickable(enabled = !isLoading) {
+                                // Handle forgot password
+                                scope.launch {
+                                    snackbarHostState.showSnackbar("Forgot password feature coming soon!")
+                                }
+                            }
+                    )
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    // Login button
+                    Button(
+                        onClick = {
+                            scope.launch {
+                                isLoading = true
+                                errorMessage = ""
+                                performLogin(
+                                    auth = auth,
+                                    email = phoneOrEmail,
+                                    password = password,
+                                    context = context,
+                                    sessionViewModel = sessionViewModel,
+                                    navController = navController
+                                ) { error ->
+                                    errorMessage = error
+                                    isLoading = false
+                                    if (error.isNotEmpty()) {
+                                        scope.launch {
+                                            snackbarHostState.showSnackbar(error)
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(50.dp),
+                        enabled = !isLoading && phoneOrEmail.isNotEmpty() && password.isNotEmpty(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = primaryGreen,
+                            disabledContainerColor = primaryGreen.copy(alpha = 0.6f)
+                        ),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        if (isLoading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                color = Color.White,
+                                strokeWidth = 2.dp
+                            )
+                        } else {
+                            Text(
+                                text = "Login",
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+
+                    // Error message
+                    if (errorMessage.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = errorMessage,
+                            color = Color.Red,
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    // Sign up text
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Don't have an account? ",
+                            color = Color.DarkGray,
+                            fontSize = 14.sp
+                        )
+
+                        Text(
+                            text = "Sign Up",
+                            color = primaryGreen,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.clickable {
+                                navController.navigate(RouteSignupScreen::class.qualifiedName ?: "")
+                            }
+                        )
                     }
                 }
-            },
-            modifier = Modifier.fillMaxWidth(),
-            enabled = !isLoading && email.isNotEmpty() && password.isNotEmpty()
-        ) {
-            if (isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(24.dp),
-                    color = Color.White
-                )
-            } else {
-                Text("LOG IN")
             }
         }
-
-        // Error message
-        if (errorMessage.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = errorMessage,
-                color = Color.Red,
-                modifier = Modifier.padding(horizontal = 16.dp)
-            )
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // New User Section
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.clickable(enabled = !isLoading) {
-                // Navigate to registration
-                navController.navigate(RouteSignupScreen)
-            }
-        ) {
-            Text("New User? ")
-            Text(
-                "CREATE AN ACCOUNT",
-                color = Color(0xFF4CAF50)
-            )
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text("OR", color = Color.Gray)
-
-        Spacer(modifier = Modifier.height(8.dp))
     }
 }
 
@@ -183,14 +346,11 @@ private suspend fun performLogin(
     onError: (String) -> Unit
 ) {
     try {
-        // Trim input
         val trimmedEmail = email.trim()
         val trimmedPassword = password.trim()
-
-        // Validate input
         when {
             trimmedEmail.isEmpty() -> {
-                onError("Email cannot be empty")
+                onError("Email or mobile cannot be empty")
                 return
             }
             trimmedPassword.isEmpty() -> {
@@ -198,18 +358,11 @@ private suspend fun performLogin(
                 return
             }
         }
-
-        // Attempt login
         val result = auth.signInWithEmailAndPassword(trimmedEmail, trimmedPassword).await()
-
         result.user?.let { user ->
-            // Generate token
             val token = user.getIdToken(false).await().token ?: throw Exception("Failed to get token")
-
-            // Update session using SessionViewModel
             sessionViewModel.login(token, user.uid)
         } ?: throw Exception("Login failed: Unknown error")
-
     } catch (e: Exception) {
         val errorMessage = when (e) {
             is FirebaseAuthInvalidUserException -> "No account exists with this email"
