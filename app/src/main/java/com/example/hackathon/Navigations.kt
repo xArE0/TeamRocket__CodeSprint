@@ -61,10 +61,9 @@ fun MyAppNavigation(
             )
         }
         composable<RouteProfilePage> {
-            LoginScreen(
-                navController = navController,
-                sessionViewModel = sessionViewModel,
-                sessionState = sessionState
+            VetProfileScreen(
+                navController = navController
+
             )
         }
         composable<AddCattleScreen> {
