@@ -1,23 +1,11 @@
+// ViewModel.kt (corrected and complete)
 package com.example.hackathon
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -27,9 +15,10 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
-import kotlinx.coroutines.delay
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.tasks.await
 
 // User data class
@@ -37,7 +26,7 @@ data class User(
     val fullName: String = "",
     val email: String = "",
     val mobileNumber: String = "",
-    val imageUrl: String? = null // Add this field
+    val imageUrl: String? = null
 )
 
 // Cattle data class
@@ -54,12 +43,23 @@ data class Cattle(
     val color: String = "",
     val notes: String = ""
 )
+class NotificationViewModel : ViewModel() {
+    private val _selectedNotification = mutableStateOf<CattleNotificationDetailed?>(null)
+    val selectedNotification: MutableState<CattleNotificationDetailed?> = _selectedNotification
 
-/*-------------------------------------------Main Class to Fetch Data from Firebase-----------------------------------*/
+    fun selectNotification(notification: CattleNotificationDetailed) {
+        _selectedNotification.value = notification
+    }
+
+    fun clearSelectedNotification() {
+        _selectedNotification.value = null
+    }
+}
+
+
 class FirebaseDataClass {
     private val firestore = FirebaseFirestore.getInstance()
 
-    // Function to fetch user data
     suspend fun fetchUserData(userId: String): User? {
         return try {
             val doc = firestore.collection("users").document(userId).get().await()
@@ -77,7 +77,6 @@ class FirebaseDataClass {
         }
     }
 
-    // Function to add cattle data
     suspend fun addCattle(userId: String, cattle: Cattle) {
         firestore.collection("users")
             .document(userId)
@@ -86,7 +85,6 @@ class FirebaseDataClass {
             .await()
     }
 
-    // Function to fetch cattle list
     suspend fun fetchCattleList(userId: String): List<Cattle> {
         return try {
             val snapshot = firestore.collection("users")
@@ -107,11 +105,9 @@ class FirebaseDataClass {
     }
 }
 
-/*-------------------------------------------Navigate to Homepage Through Splash-------------------------------------*/
 @Composable
 fun SplashScreenApp() {
     var isLoading by remember { mutableStateOf(true) }
-
     val sessionViewModel: SessionViewModel = viewModel(factory = SessionViewModel.Factory)
 
     LaunchedEffect(Unit) {
@@ -128,7 +124,6 @@ fun SplashScreenApp() {
     }
 }
 
-/*-------------------------------------------Splash Screen UI--------------------------------------------------*/
 @Composable
 fun SplashScreen() {
     Box(
@@ -156,9 +151,9 @@ fun SplashScreen() {
                 style = TextStyle(
                     brush = Brush.linearGradient(
                         colors = listOf(
-                            Color(0xFFFF69B4), // Neon Pink
-                            Color(0xFF4C4CFF), // Neon Blue
-                            Color(0xFF00FF00)  // Neon Green
+                            Color(0xFFFF69B4),
+                            Color(0xFF4C4CFF),
+                            Color(0xFF00FF00)
                         )
                     ),
                     fontSize = 42.sp,
@@ -168,3 +163,4 @@ fun SplashScreen() {
         }
     }
 }
+

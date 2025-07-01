@@ -14,9 +14,11 @@ fun ProfilePage(
     sessionState: SessionState
 ) {
     Scaffold(
-        bottomBar = {  FarmBottomNavigationBar(
-            navController = navController,
-            currentRoute = navController.currentBackStackEntry?.destination?.route)
+        bottomBar = {
+            FarmBottomNavigationBar(
+                navController = navController,
+                currentRoute = navController.currentBackStackEntry?.destination?.route ?: ""
+            )
         }
     ) { innerPadding ->
         Column(
@@ -29,7 +31,7 @@ fun ProfilePage(
                 text = "Profile Page",
                 style = MaterialTheme.typography.headlineMedium
             )
-            // Add more herd content here
+            // TODO: Add profile content here
         }
     }
 }

@@ -1,20 +1,22 @@
+// Navigations.kt (fixed with inline Notification selection)
 package com.example.hackathon
 
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import kotlinx.serialization.Serializable
 
-/*-------------------------------------------Routes and Navigation--------------------------------------------------*/
 @Composable
 fun MyAppNavigation(
     sessionViewModel: SessionViewModel = LocalSessionManager.current
 ) {
     val navController = rememberNavController()
     val sessionState by sessionViewModel.sessionState.collectAsState()
+    val selectedNotification = remember { mutableStateOf<CattleNotificationDetailed?>(null) }
 
-    // Redirect to login if not authenticated
     LaunchedEffect(sessionState.isAuthenticated) {
         if (!sessionState.isAuthenticated) {
             navController.navigate(RouteLoginScreen::class.qualifiedName ?: "") {
@@ -24,73 +26,61 @@ fun MyAppNavigation(
         }
     }
 
-    NavHost(navController = navController, startDestination = if (sessionState.isAuthenticated) RouteHomepage::class.qualifiedName!! else RouteLoginScreen::class.qualifiedName!!) {
+    NavHost(
+        navController = navController,
+        startDestination = if (sessionState.isAuthenticated)
+            RouteHomepage::class.qualifiedName!!
+        else
+            RouteLoginScreen::class.qualifiedName!!
+    ) {
         composable<RouteHomepage> {
-            Homepage(
-                navController = navController,
-                sessionViewModel = sessionViewModel,
-                sessionState = sessionState
-            )
+            Homepage(navController, sessionViewModel, sessionState)
         }
         composable<RouteLoginScreen> {
-            LoginScreen(
-                navController = navController,
-                sessionViewModel = sessionViewModel
-            )
+            LoginScreen(navController, sessionViewModel)
         }
         composable<RouteSignupScreen> {
-            Signup(
-                navController = navController,
-                sessionViewModel = sessionViewModel
-            )
+            Signup(navController, sessionViewModel)
         }
         composable<RouteHerdPage> {
-            HerdPage(
-                navController = navController,
-                sessionViewModel = sessionViewModel,
-                sessionState = sessionState
-            )
+            HerdPage(navController, sessionViewModel, sessionState)
         }
         composable<RouteTasksPage> {
-            TasksPage(
-                navController = navController,
-                sessionViewModel = sessionViewModel,
-                sessionState = sessionState
-            )
+            DoctorProfileScreen(navController, sessionViewModel)
         }
         composable<RouteProfilePage> {
-            ProfilePage(
+            DoctorNotificationScreen(
                 navController = navController,
-                sessionViewModel = sessionViewModel,
-                sessionState = sessionState
+                onNotificationClick = { notification ->
+                    selectedNotification.value = notification
+                    navController.navigate(RouteNotificationLandScreen::class.qualifiedName!!)
+                }
             )
         }
         composable<AddCattleScreen> {
-            AddNewAnimalScreen(
-                navController = navController,
-                sessionViewModel = sessionViewModel
-            )
+            AddNewAnimalScreen(navController, sessionViewModel)
+        }
+        composable<RouteNotificationLandScreen> {
+            val notification = selectedNotification.value
+            if (notification != null) {
+                NotificationDetailScreen(
+                    navController = navController,
+                    sessionViewModel = sessionViewModel,
+                    notification = notification
+                )
+            } else {
+                Text("No notification selected.")
+            }
         }
     }
 }
-/*-------------------------------------------Serializable Routes Objects--------------------------------------------------*/
-@Serializable
-object RouteHomepage
 
-@Serializable
-object RouteLoginScreen
-
-@Serializable
-object RouteSignupScreen
-
-@Serializable
-object RouteHerdPage
-
-@Serializable
-object RouteTasksPage
-
-@Serializable
-object RouteProfilePage
-
-@Serializable
-object AddCattleScreen
+// Serializable Routes
+@Serializable object RouteHomepage
+@Serializable object RouteLoginScreen
+@Serializable object RouteSignupScreen
+@Serializable object RouteHerdPage
+@Serializable object RouteTasksPage
+@Serializable object RouteProfilePage
+@Serializable object AddCattleScreen
+@Serializable object RouteNotificationLandScreen
