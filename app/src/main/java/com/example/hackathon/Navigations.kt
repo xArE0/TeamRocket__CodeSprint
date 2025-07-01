@@ -40,7 +40,7 @@ fun MyAppNavigation(
             )
         }
         composable<RouteSignupScreen> {
-            Signup(
+            SignupScreen(
                 navController = navController,
                 sessionViewModel = sessionViewModel
             )
@@ -60,10 +60,9 @@ fun MyAppNavigation(
             )
         }
         composable<RouteProfilePage> {
-            ProfilePage(
+            SignupScreen(
                 navController = navController,
-                sessionViewModel = sessionViewModel,
-                sessionState = sessionState
+                sessionViewModel = sessionViewModel
             )
         }
         composable<AddCattleScreen> {
